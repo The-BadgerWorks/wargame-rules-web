@@ -1,0 +1,68 @@
+---
+// AI-Assisted: Claude Code (model: claude-opus-5) - The shared layout every page of the site uses
+// (task T016). It is where four site-wide guarantees are made true by construction rather than page
+// by page:
+//
+//   FR-018  the rules version's display name and publication date, on every page
+//   FR-019  the withdrawal notice with its recorded reason, on every page, without hiding content
+//   FR-023  the unofficial / no-affiliation disclaimer, on every page
+//   D3 c.4  preview builds are noindex, so a publicly addressable preview cannot outrank production
+//
+// Every string rendered here is either a value from the bundle or the manifest, or a key of
+// chrome-strings.json. There is no inline English literal in this file, and a reviewer should treat
+// one appearing as a defect (FR-024, SC-003).
+import VersionBanner from '../components/VersionBanner.astro';
+import strings from '../chrome-strings.json';
+import { NOINDEX } from '../config.ts';
+import { rulesVersion } from '../data/bundle.ts';
+import '../styles/site.css';
+
+interface Props {
+  /** The page's own name. Always a bundle value or a chrome string, never composed prose. */
+  title: string;
+}
+
+const { title } = Astro.props;
+
+const pageTitle =
+  title === strings.site.name ? title : `${title}${strings.site.titleSeparator}${strings.site.name}`;
+
+const canonical = new URL(Astro.url.pathname, Astro.site ?? Astro.url).href;
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{pageTitle}</title>
+    <link rel="canonical" href={canonical} />
+    {NOINDEX && <meta name="robots" content="noindex" />}
+    <meta name="generator" content={Astro.generator} />
+    <meta name="wgc:rules-version" content={rulesVersion.rulesVersionId} />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">{strings.nav.skipToContent}</a>
+
+    <header class="site-header">
+      <p class="site-header__brand">
+        <a href="/">{strings.site.name}</a>
+      </p>
+      <nav class="site-nav" aria-label={strings.nav.home}>
+        <a href="/">{strings.nav.home}</a>
+      </nav>
+      <VersionBanner rulesVersion={rulesVersion} />
+    </header>
+
+    <main id="main" class="site-main">
+      <slot />
+    </main>
+
+    <footer class="site-footer">
+      <!-- FR-023. In the shared layout, so it holds on 100% of pages by construction. -->
+      <section class="disclaimer" data-disclaimer aria-label={strings.disclaimer.heading}>
+        <p class="disclaimer__heading">{strings.disclaimer.heading}</p>
+        <p class="disclaimer__body">{strings.disclaimer.body}</p>
+      </section>
+    </footer>
+  </body>
+</html>

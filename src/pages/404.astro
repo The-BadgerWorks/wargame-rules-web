@@ -1,0 +1,17 @@
+---
+// AI-Assisted: Claude Code (model: claude-opus-5) - The not-found page (task T017).
+//
+// This page exists because a 404 here is by design, not by defect. The site presents only the
+// single current rules version (FR-020) and research D1 records that URL continuity across rules
+// versions is explicitly NOT guaranteed: when an entity is renamed or removed upstream, its old
+// address stops resolving. wrangler.jsonc's `not_found_handling: "404-page"` routes those requests
+// to this page, and the page says what happened rather than showing a bare server error.
+import BaseLayout from '../layouts/BaseLayout.astro';
+import strings from '../chrome-strings.json';
+---
+
+<BaseLayout title={strings.notFound.title}>
+  <h1>{strings.notFound.heading}</h1>
+  <p>{strings.notFound.body}</p>
+  <p><a href="/">{strings.notFound.backToIndex}</a></p>
+</BaseLayout>

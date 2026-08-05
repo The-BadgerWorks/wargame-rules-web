@@ -2,6 +2,7 @@
 // site (research D6). getViteConfig() from astro/config is what lets a test import .astro files at
 // all, which the version-banner test needs. Every test runs against the SYNTHETIC fixtures in
 // test/fixtures/ - never the live manifest - so the suite is offline and deterministic.
+/// <reference types="vitest/config" />
 import { getViteConfig } from 'astro/config';
 
 export default getViteConfig({

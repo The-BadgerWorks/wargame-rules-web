@@ -39,3 +39,40 @@ export const MANIFEST_URL: string = process.env.WGC_WEB_MANIFEST_URL ?? DEFAULT_
  * rendered as current.
  */
 export const USE_BUNDLE_CACHE: boolean = !process.env.CI;
+
+// ---------------------------------------------------------------------------
+// Which build is this? (task T018)
+//
+// Cloudflare Workers Builds runs the same build command for every branch and differs only in its
+// deploy command - `wrangler deploy` promotes, `wrangler versions upload` does not. The build
+// itself therefore has to read the branch to know whether it is producing the production site.
+// WORKERS_CI_BRANCH is the variable Workers Builds sets; WGC_WEB_BRANCH overrides it, which is what
+// lets this path be exercised locally and keeps a rename upstream from being a code change.
+// Both are recorded in docs/cloudflare-settings.md §5 as declared build-environment assumptions.
+// ---------------------------------------------------------------------------
+
+export const PRODUCTION_BRANCH = 'main';
+
+export const BRANCH: string = process.env.WGC_WEB_BRANCH ?? process.env.WORKERS_CI_BRANCH ?? '';
+
+/** True only for a build of the production branch, which is the build that gets promoted. */
+export const IS_PRODUCTION_BUILD: boolean = BRANCH === PRODUCTION_BRANCH;
+
+// FR-002 enforced structurally rather than by convention: a production build against anything but
+// the published channel fails here, before a page is rendered, rather than being caught in review.
+if (IS_PRODUCTION_BUILD && CHANNEL !== 'published') {
+  throw new Error(
+    `A production build (branch "${BRANCH}") may only be generated from the published manifest ` +
+      `channel, but WGC_WEB_CHANNEL is "${CHANNEL}" (FR-002). Refusing to build.`,
+  );
+}
+
+/** The canonical base URL. Changing hostname is a configuration change, never a code change. */
+export const SITE_URL: string =
+  process.env.WGC_WEB_SITE_URL ?? 'https://wargame-rules-web.workers.dev';
+
+/**
+ * Preview builds are publicly addressable, so they must not be indexable - a preview must never
+ * outrank the production site or present stale data as current (research D3, caveat 4).
+ */
+export const NOINDEX: boolean = !IS_PRODUCTION_BUILD || CHANNEL !== 'published';

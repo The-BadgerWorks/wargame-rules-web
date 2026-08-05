@@ -1,0 +1,55 @@
+---
+// AI-Assisted: Claude Code (model: claude-opus-5) - The version banner and withdrawal notice
+// (task T016; FR-018, FR-019, SC-004). Rendered by BaseLayout on every page, so both guarantees
+// hold site-wide by construction rather than page by page.
+//
+// It takes the RulesVersion as a prop rather than reading the module singleton, which is what lets
+// test/banner.test.ts render it against both a withdrawn and a non-withdrawn fixture in one run.
+//
+// Every string below is either a value carried on that record or a key of chrome-strings.json.
+// There is no inline literal anywhere in this file.
+import strings from '../chrome-strings.json';
+import type { RulesVersion } from '../data/bundle.ts';
+
+interface Props {
+  rulesVersion: RulesVersion;
+}
+
+const { rulesVersion } = Astro.props;
+
+// The ISO date, rendered verbatim rather than reformatted: locale-free, deterministic across build
+// machines, and traceable token-for-token back to the manifest entry it came from.
+const publishedDate = rulesVersion.publishedAt.slice(0, 10);
+---
+
+<div
+  class="version-banner"
+  data-version-banner
+  data-rules-version-id={rulesVersion.rulesVersionId}
+  data-withdrawn={String(rulesVersion.withdrawn)}
+>
+  <p class="version-banner__line">
+    <span class="version-banner__label">{strings.banner.label}</span>
+    <strong class="version-banner__value">{rulesVersion.displayName}</strong>
+    <span class="version-banner__label">{strings.banner.publishedLabel}</span>
+    <time class="version-banner__value" datetime={rulesVersion.publishedAt}>{publishedDate}</time>
+  </p>
+
+  <p class="version-banner__line version-banner__line--muted">
+    <span class="version-banner__label">{strings.banner.sourceLabel}</span>
+    <span class="version-banner__value">{rulesVersion.sourceNote}</span>
+  </p>
+
+  {
+    rulesVersion.withdrawn && (
+      <div class="withdrawal-notice" role="alert" data-withdrawal-notice>
+        <p class="withdrawal-notice__heading">{strings.banner.withdrawnHeading}</p>
+        <p class="withdrawal-notice__reason">
+          <span class="version-banner__label">{strings.banner.withdrawnReasonLabel}</span>
+          <span>{rulesVersion.withdrawnReason ?? strings.banner.withdrawnNoReason}</span>
+        </p>
+        <p class="withdrawal-notice__standing">{strings.banner.withdrawnStanding}</p>
+      </div>
+    )
+  }
+</div>

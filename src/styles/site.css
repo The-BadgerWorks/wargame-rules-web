@@ -1,0 +1,235 @@
+/*
+ * AI-Assisted: Claude Code (model: claude-opus-5) - The site's only stylesheet (task T016).
+ *
+ * No CSS framework and no build step beyond Astro's own: this is a reference site whose per-page
+ * payload is HTML plus this one file plus one small filter script. It uses system fonts so nothing
+ * is fetched from a third party, and it carries no decorative imagery of any kind - FR-024 forbids
+ * artwork and miniature imagery, and the cheapest way to honour that is to have none to review.
+ */
+
+:root {
+  --ink: #14171a;
+  --ink-muted: #55606b;
+  --paper: #fbfbf9;
+  --panel: #ffffff;
+  --rule: #d8dbdf;
+  --accent: #1f5f4f;
+  --warn-ink: #6b2410;
+  --warn-paper: #fdf1e7;
+  --warn-rule: #d9884f;
+  --radius: 6px;
+  --measure: 68rem;
+  --font-body: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ink: #e8eaec;
+    --ink-muted: #a3adb6;
+    --paper: #15181b;
+    --panel: #1d2125;
+    --rule: #333a41;
+    --accent: #62c8ab;
+    --warn-ink: #ffd9c4;
+    --warn-paper: #3a2114;
+    --warn-rule: #b4703f;
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  color-scheme: light dark;
+}
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+a {
+  color: var(--accent);
+}
+
+a:hover,
+a:focus-visible {
+  text-decoration-thickness: 2px;
+}
+
+.skip-link {
+  position: absolute;
+  left: -9999px;
+}
+
+.skip-link:focus-visible {
+  position: static;
+  display: inline-block;
+  padding: 0.5rem 1rem;
+}
+
+/* --------------------------------------------------------------------------
+ * Header, nav and the version banner
+ * -------------------------------------------------------------------------- */
+
+.site-header {
+  border-bottom: 1px solid var(--rule);
+  background: var(--panel);
+  padding: 1rem 1.25rem 0.75rem;
+}
+
+.site-header__brand {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.site-header__brand a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.site-nav {
+  margin-top: 0.25rem;
+  font-size: 0.9375rem;
+}
+
+.version-banner {
+  margin-top: 0.75rem;
+  border-top: 1px solid var(--rule);
+  padding-top: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.version-banner__line {
+  margin: 0 0 0.25rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.75rem;
+  align-items: baseline;
+}
+
+.version-banner__line--muted {
+  color: var(--ink-muted);
+}
+
+.version-banner__label {
+  color: var(--ink-muted);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.version-banner__value {
+  font-variant-numeric: tabular-nums;
+}
+
+/* FR-019. Prominent, and deliberately additive: it never hides the reference content below it. */
+.withdrawal-notice {
+  margin: 0.75rem 0 0.5rem;
+  border: 2px solid var(--warn-rule);
+  border-radius: var(--radius);
+  background: var(--warn-paper);
+  color: var(--warn-ink);
+  padding: 0.75rem 1rem;
+}
+
+.withdrawal-notice p {
+  margin: 0 0 0.35rem;
+}
+
+.withdrawal-notice p:last-child {
+  margin-bottom: 0;
+}
+
+.withdrawal-notice__heading {
+  font-weight: 700;
+}
+
+.withdrawal-notice__standing {
+  font-size: 0.875rem;
+}
+
+/* --------------------------------------------------------------------------
+ * Main content
+ * -------------------------------------------------------------------------- */
+
+.site-main {
+  max-width: var(--measure);
+  margin: 0 auto;
+  padding: 1.5rem 1.25rem 3rem;
+}
+
+.site-main h1 {
+  margin-top: 0;
+  font-size: 1.75rem;
+  line-height: 1.2;
+}
+
+.site-main h2 {
+  margin-top: 2rem;
+  font-size: 1.25rem;
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: 0.25rem;
+}
+
+.empty-state {
+  color: var(--ink-muted);
+  font-style: italic;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  font-variant-numeric: tabular-nums;
+}
+
+th,
+td {
+  border-bottom: 1px solid var(--rule);
+  padding: 0.35rem 0.5rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+code,
+.mono {
+  font-family: var(--font-mono);
+}
+
+/* --------------------------------------------------------------------------
+ * Footer and the FR-023 disclaimer
+ * -------------------------------------------------------------------------- */
+
+.site-footer {
+  border-top: 1px solid var(--rule);
+  background: var(--panel);
+  padding: 1.25rem;
+}
+
+.disclaimer {
+  max-width: var(--measure);
+  margin: 0 auto;
+  color: var(--ink-muted);
+  font-size: 0.8125rem;
+}
+
+.disclaimer__heading {
+  margin: 0 0 0.25rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.disclaimer__body {
+  margin: 0;
+}
