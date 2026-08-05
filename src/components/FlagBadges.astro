@@ -1,0 +1,43 @@
+---
+// AI-Assisted: Claude Code (model: claude-opus-5) - Category flags (task T029; FR-015, US2
+// acceptance scenario 8).
+//
+// FR-015 requires these on "both unit listings and the unit's own page", so the mapping from the
+// datasheet's boolean columns to the authored flag names lives here once. Two pages deriving the
+// same badges independently is how a listing and a datacard come to disagree.
+//
+// A Legends unit is badged, never hidden or filtered out: spec.md's Edge Cases are explicit that it
+// stays in the faction's unit list and is visibly labelled.
+import strings from '../chrome-strings.json';
+import type { Datasheet } from '../data/bundle.ts';
+
+interface Props {
+  datasheet: Datasheet;
+}
+
+const { datasheet } = Astro.props;
+
+const badges: readonly { key: string; label: string }[] = [
+  { key: 'battleline', label: strings.flags.battleline, on: datasheet.isBattleline },
+  { key: 'character', label: strings.flags.character, on: datasheet.isCharacter },
+  { key: 'epic-hero', label: strings.flags.epicHero, on: datasheet.isEpicHero },
+  {
+    key: 'dedicated-transport',
+    label: strings.flags.dedicatedTransport,
+    on: datasheet.isDedicatedTransport,
+  },
+  { key: 'legends', label: strings.flags.legends, on: datasheet.isLegends },
+].filter((badge) => badge.on);
+---
+
+{
+  badges.length > 0 && (
+    <span class="flag-badges">
+      {badges.map((badge) => (
+        <span class="flag" data-flag={badge.key}>
+          {badge.label}
+        </span>
+      ))}
+    </span>
+  )
+}

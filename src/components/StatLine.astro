@@ -1,0 +1,72 @@
+---
+// AI-Assisted: Claude Code (model: claude-opus-5) - Per-model characteristics (task T027; FR-008,
+// US2 acceptance scenario 1).
+//
+// One row per model LINE, not one row per datasheet: a datasheet whose models differ (a squad and
+// its leader, a vehicle and its damaged profile) publishes several lines, and collapsing them would
+// silently drop published values.
+//
+// The invulnerable-save and base-size columns are omitted from the table entirely when no model on
+// the datasheet has one - spec.md's Edge Cases require the section to be "simply omitted rather
+// than shown empty", and a column of blank cells is exactly the empty section it means. FR-008 says
+// "invulnerable save where present", so a header with nothing under it would also misreport the
+// data as missing rather than as inapplicable.
+import strings from '../chrome-strings.json';
+import type { DatasheetModel } from '../data/bundle.ts';
+
+interface Props {
+  models: readonly DatasheetModel[];
+}
+
+const { models } = Astro.props;
+
+const showInvuln = models.some((model) => model.invulnSave !== undefined);
+const showBaseSize = models.some((model) => model.baseSize !== undefined);
+---
+
+<div class="table-scroll">
+  <table class="statline">
+    <thead>
+      <tr>
+        <th scope="col" data-stat="name">{strings.headings.models}</th>
+        <th scope="col" data-stat="movement">{strings.labels.movement}</th>
+        <th scope="col" data-stat="toughness">{strings.labels.toughness}</th>
+        <th scope="col" data-stat="save">{strings.labels.save}</th>
+        {
+          showInvuln && (
+            <th scope="col" data-stat="invulnSave">
+              {strings.labels.invulnSave}
+            </th>
+          )
+        }
+        <th scope="col" data-stat="wounds">{strings.labels.wounds}</th>
+        <th scope="col" data-stat="leadership">{strings.labels.leadership}</th>
+        <th scope="col" data-stat="objectiveControl">{strings.labels.objectiveControl}</th>
+        {
+          showBaseSize && (
+            <th scope="col" data-stat="baseSize">
+              {strings.labels.baseSize}
+            </th>
+          )
+        }
+      </tr>
+    </thead>
+    <tbody>
+      {
+        models.map((model) => (
+          <tr data-model={model.line}>
+            <th scope="row">{model.name}</th>
+            <td class="mono">{model.movement}</td>
+            <td class="mono">{model.toughness}</td>
+            <td class="mono">{model.save}</td>
+            {showInvuln && <td class="mono">{model.invulnSave}</td>}
+            <td class="mono">{model.wounds}</td>
+            <td class="mono">{model.leadership}</td>
+            <td class="mono">{model.objectiveControl}</td>
+            {showBaseSize && <td class="mono">{model.baseSize}</td>}
+          </tr>
+        ))
+      }
+    </tbody>
+  </table>
+</div>

@@ -343,6 +343,72 @@ code,
   gap: 0.25rem;
 }
 
+.flag--unverified {
+  border-color: var(--warn-rule);
+  color: var(--warn-ink);
+  background: var(--warn-paper);
+  margin-left: 0.4rem;
+}
+
+/* --------------------------------------------------------------------------
+ * Unit datacard
+ * -------------------------------------------------------------------------- */
+
+.table-scroll {
+  overflow-x: auto;
+}
+
+.statline th[scope='row'],
+.weapons th[scope='row'] {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.weapon-keywords {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+  color: var(--ink-muted);
+}
+
+.ability {
+  border-bottom: 1px solid var(--rule);
+  padding: 0.5rem 0;
+}
+
+.ability__name {
+  margin: 0;
+  font-weight: 600;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.ability__summary {
+  margin: 0.15rem 0 0;
+}
+
+.keyword-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.cost-note {
+  margin: 0.4rem 0 0;
+  color: var(--ink-muted);
+  font-size: 0.875rem;
+}
+
+.leads-list {
+  margin-top: 0.5rem;
+}
+
 /* --------------------------------------------------------------------------
  * Footer and the FR-023 disclaimer
  * -------------------------------------------------------------------------- */

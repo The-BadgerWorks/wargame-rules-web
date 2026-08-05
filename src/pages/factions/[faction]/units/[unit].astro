@@ -1,0 +1,178 @@
+---
+// AI-Assisted: Claude Code (model: claude-opus-5) - One page per unit: the datacard (task T031;
+// FR-007 through FR-015, US2 acceptance scenarios 1-8).
+//
+// This page assembles the five datacard components and owns only two things itself: the header
+// meta line, and FR-013's leader-pairing list.
+//
+// US2's Independent Test is that this page is correct when opened DIRECTLY by its own URL, with no
+// prior navigation. A static build gives that for free - every value below is read from the bundle
+// at build time and baked into the file - which is why there is no client-side data loading here
+// and no dependency on how the visitor arrived.
+//
+// The leader-pairing list is rendered for a Character only, and links to each led unit's own page.
+// A Character the bundle records no pairings for says so rather than showing nothing: silence would
+// be indistinguishable from a page that forgot to render the section.
+import BaseLayout from '../../../../layouts/BaseLayout.astro';
+import AbilityList from '../../../../components/AbilityList.astro';
+import CostTable from '../../../../components/CostTable.astro';
+import FlagBadges from '../../../../components/FlagBadges.astro';
+import StatLine from '../../../../components/StatLine.astro';
+import WeaponTable from '../../../../components/WeaponTable.astro';
+import strings from '../../../../chrome-strings.json';
+import {
+  abilitiesByDatasheet,
+  costTiersByDatasheet,
+  costsByDatasheet,
+  datasheets,
+  datasheetsById,
+  factionHref,
+  factionsById,
+  keywordsByDatasheet,
+  leaderPairsByLeader,
+  modelsByDatasheet,
+  unitHref,
+  unitSlugById,
+  wargearOptionsByDatasheet,
+  weaponsByDatasheet,
+  type Datasheet,
+  type Faction,
+} from '../../../../data/bundle.ts';
+import { factionCode } from '../../../../data/slugs.ts';
+
+export function getStaticPaths() {
+  return datasheets.map((datasheet) => {
+    const faction = factionsById.get(datasheet.factionId);
+    if (!faction) {
+      throw new Error(
+        `Datasheet "${datasheet.id}" references faction "${datasheet.factionId}", ` +
+          `which the bundle does not define.`,
+      );
+    }
+    return {
+      params: {
+        faction: factionCode(faction.code),
+        unit: unitSlugById.get(datasheet.id)!,
+      },
+      props: { datasheet, faction },
+    };
+  });
+}
+
+interface Props {
+  datasheet: Datasheet;
+  faction: Faction;
+}
+
+const { datasheet, faction } = Astro.props;
+
+const models = modelsByDatasheet.get(datasheet.id) ?? [];
+const weapons = weaponsByDatasheet.get(datasheet.id) ?? [];
+const rangedWeapons = weapons.filter((weapon) => !weapon.isMelee);
+const meleeWeapons = weapons.filter((weapon) => weapon.isMelee);
+const abilities = abilitiesByDatasheet.get(datasheet.id) ?? [];
+const keywords = keywordsByDatasheet.get(datasheet.id) ?? [];
+
+// The led units are listed by name and link only. They deliberately carry no FlagBadges: the badges
+// on this page describe THIS unit, and repeating a led unit's categories in the same document would
+// make FR-015's "on the unit's own page" ambiguous about which unit a badge belongs to.
+const led = (leaderPairsByLeader.get(datasheet.id) ?? [])
+  .map((pair) => datasheetsById.get(pair.bodyguardDatasheetId))
+  .filter((unit): unit is Datasheet => unit !== undefined)
+  .sort((a, b) => a.name.localeCompare(b.name));
+---
+
+<BaseLayout title={datasheet.name}>
+  <nav class="breadcrumb" aria-label={strings.nav.breadcrumb}>
+    <a href="/">{strings.nav.home}</a>
+    <a href={factionHref(faction)}>{faction.name}</a>
+  </nav>
+
+  <h1>{datasheet.name}</h1>
+
+  <p class="entity-meta">
+    {
+      datasheet.role && (
+        <>
+          <span class="meta-label">{strings.labels.role}</span>
+          <span>{datasheet.role}</span>
+        </>
+      )
+    }
+    <FlagBadges datasheet={datasheet} />
+  </p>
+
+  {
+    (datasheet.maxCopiesPerArmy !== undefined ||
+      datasheet.damagedThreshold !== undefined ||
+      datasheet.detailEditionCode !== undefined) && (
+      <p class="entity-meta">
+        {datasheet.maxCopiesPerArmy !== undefined && (
+          <>
+            <span class="meta-label">{strings.labels.maxCopiesPerArmy}</span>
+            <span class="mono">{datasheet.maxCopiesPerArmy}</span>
+          </>
+        )}
+        {datasheet.damagedThreshold !== undefined && (
+          <>
+            <span class="meta-label">{strings.labels.damagedThreshold}</span>
+            <span class="mono">{datasheet.damagedThreshold}</span>
+          </>
+        )}
+        {datasheet.detailEditionCode !== undefined && (
+          <>
+            <span class="meta-label">{strings.labels.detailEdition}</span>
+            <span class="mono">{datasheet.detailEditionCode}</span>
+          </>
+        )}
+      </p>
+    )
+  }
+
+  <h2>{strings.headings.models}</h2>
+  <StatLine models={models} />
+
+  <WeaponTable weapons={rangedWeapons} kind="ranged" />
+  <WeaponTable weapons={meleeWeapons} kind="melee" />
+
+  <h2>{strings.headings.abilities}</h2>
+  <AbilityList abilities={abilities} />
+
+  <h2>{strings.headings.keywords}</h2>
+  <ul class="keyword-list">
+    {
+      keywords.map((keyword) => (
+        <li class="flag" data-keyword>
+          {keyword.keyword}
+        </li>
+      ))
+    }
+  </ul>
+
+  <CostTable
+    costs={costsByDatasheet.get(datasheet.id) ?? []}
+    tiers={costTiersByDatasheet.get(datasheet.id) ?? []}
+    wargearOptions={wargearOptionsByDatasheet.get(datasheet.id) ?? []}
+  />
+
+  {
+    datasheet.isCharacter && (
+      <>
+        <h2>{strings.headings.leads}</h2>
+        {led.length === 0 ? (
+          <p class="empty-state" data-empty="leads">
+            {strings.empty.leads}
+          </p>
+        ) : (
+          <ul class="leads-list">
+            {led.map((unit) => (
+              <li class="entity-list__item" data-leads={unitSlugById.get(unit.id)}>
+                <a href={unitHref(unit)}>{unit.name}</a>
+              </li>
+            ))}
+          </ul>
+        )}
+      </>
+    )
+  }
+</BaseLayout>

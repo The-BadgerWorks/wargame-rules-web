@@ -1,0 +1,132 @@
+---
+// AI-Assisted: Claude Code (model: claude-opus-5) - Points and cost-bearing wargear (task T028;
+// FR-011, FR-012, FR-014, US2 acceptance scenarios 4, 5 and 7).
+//
+// Three decisions worth stating.
+//
+// 1. `datasheetCostTiers` is preferred over `datasheetCosts` when the datasheet has any: the tier
+//    rows carry the same model count and points PLUS the copy index at which an escalating cost
+//    starts, so rendering both would print each price twice and rendering only the flat costs would
+//    drop FR-012's "escalating cost for repeated copies" entirely. A datasheet with no tiers falls
+//    back to its flat costs, read as starting at the first copy.
+// 2. FR-014's "visibly marked" is taken literally: an unverified row gets a badge of its own AND
+//    the table gets a note explaining what the badge means. A mark a reader cannot interpret is not
+//    a mark. The row is still shown - the value is the published one, it is its confidence that is
+//    qualified.
+// 3. The wargear section is OMITTED, not emptied, for a datasheet with no cost-bearing options
+//    (scenario 4, and the Edge Cases: "the corresponding section is simply omitted rather than
+//    shown empty").
+import strings from '../chrome-strings.json';
+import type {
+  DatasheetCost,
+  DatasheetCostTier,
+  DatasheetWargearOption,
+} from '../data/bundle.ts';
+
+interface Props {
+  costs: readonly DatasheetCost[];
+  tiers: readonly DatasheetCostTier[];
+  wargearOptions: readonly DatasheetWargearOption[];
+}
+
+const { costs, tiers, wargearOptions } = Astro.props;
+
+interface CostRow {
+  key: string;
+  modelCount: number;
+  copyIndexMin: number;
+  points: number;
+  pricingConfidence: DatasheetCost['pricingConfidence'];
+}
+
+const rows: CostRow[] =
+  tiers.length > 0
+    ? tiers.map((tier) => ({
+        key: `${tier.modelCount}-${tier.copyIndexMin}`,
+        modelCount: tier.modelCount,
+        copyIndexMin: tier.copyIndexMin,
+        points: tier.points,
+        pricingConfidence: tier.pricingConfidence,
+      }))
+    : costs.map((cost) => ({
+        key: `${cost.modelCount}-1`,
+        modelCount: cost.modelCount,
+        copyIndexMin: 1,
+        points: cost.points,
+        pricingConfidence: cost.pricingConfidence,
+      }));
+
+const showCopyIndex = rows.some((row) => row.copyIndexMin > 1);
+const anyUnverified = rows.some((row) => row.pricingConfidence === 'unverified');
+
+function signed(value: number): string {
+  return value > 0 ? `+${value}` : `${value}`;
+}
+---
+
+<section class="cost-section">
+  <h2>{strings.headings.points}</h2>
+
+  <div class="table-scroll">
+    <table class="costs">
+      <thead>
+        <tr>
+          <th scope="col">{strings.labels.modelCount}</th>
+          {showCopyIndex && <th scope="col">{strings.labels.copyIndexMin}</th>}
+          <th scope="col">{strings.labels.points}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {
+          rows.map((row) => (
+            <tr
+              data-cost={row.key}
+              data-cost-points={row.points}
+              data-cost-confidence={row.pricingConfidence}
+              data-cost-from={row.copyIndexMin > 1 ? row.copyIndexMin : undefined}
+            >
+              <th scope="row" class="mono">
+                {row.modelCount}
+              </th>
+              {showCopyIndex && <td class="mono">{row.copyIndexMin}</td>}
+              <td class="mono">
+                {row.points}
+                {row.pricingConfidence === 'unverified' && (
+                  <span class="flag flag--unverified">{strings.labels.unverifiedPricing}</span>
+                )}
+              </td>
+            </tr>
+          ))
+        }
+      </tbody>
+    </table>
+  </div>
+
+  {anyUnverified && <p class="cost-note">{strings.labels.unverifiedPricingNote}</p>}
+</section>
+
+{
+  wargearOptions.length > 0 && (
+    <section class="wargear-section">
+      <h2>{strings.headings.wargearOptions}</h2>
+      <div class="table-scroll">
+        <table class="wargear">
+          <thead>
+            <tr>
+              <th scope="col">{strings.headings.wargearOptions}</th>
+              <th scope="col">{strings.labels.pointsDelta}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {wargearOptions.map((option) => (
+              <tr data-wargear={option.id} data-wargear-delta={option.pointsDelta}>
+                <th scope="row">{option.name}</th>
+                <td class="mono">{signed(option.pointsDelta)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  )
+}

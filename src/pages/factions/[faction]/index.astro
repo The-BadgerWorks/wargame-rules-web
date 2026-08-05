@@ -12,6 +12,7 @@
 // A faction with no detachments, or none of its units yet curated, says so. Rendering an empty list
 // under a heading reads as a broken page rather than as accurate data.
 import BaseLayout from '../../../layouts/BaseLayout.astro';
+import FlagBadges from '../../../components/FlagBadges.astro';
 import strings from '../../../chrome-strings.json';
 import {
   detachmentHref,
@@ -89,6 +90,9 @@ const ownUnits = unitsByFaction.get(faction.id) ?? [];
         {ownUnits.map((unit) => (
           <li class="entity-list__item" data-unit={unitSlugById.get(unit.id)}>
             <a href={unitHref(unit)}>{unit.name}</a>
+            {/* FR-015 (task T030): the same badges the unit's own page shows, from the same
+                component, so a listing and a datacard cannot disagree. */}
+            <FlagBadges datasheet={unit} />
           </li>
         ))}
       </ul>

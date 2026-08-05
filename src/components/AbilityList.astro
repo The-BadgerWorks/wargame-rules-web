@@ -1,0 +1,32 @@
+---
+// AI-Assisted: Claude Code (model: claude-opus-5) - A datasheet's abilities (task T028; FR-010,
+// US2 acceptance scenario 3).
+//
+// `summary` is reproduced verbatim from the bundle. It is an ORIGINAL, mechanics-only summary
+// authored by a human upstream (002's standing rule, restated in CLAUDE.md), which means two things
+// for this component: it is safe to render, and it must not be rewritten, truncated or
+// re-worded here. Paraphrasing upstream-authored text in a downstream template would put wording
+// this repository never reviewed in front of a reader.
+import strings from '../chrome-strings.json';
+import type { DatasheetAbility } from '../data/bundle.ts';
+
+interface Props {
+  abilities: readonly DatasheetAbility[];
+}
+
+const { abilities } = Astro.props;
+---
+
+<ul class="ability-list">
+  {
+    abilities.map((ability) => (
+      <li class="ability" data-ability data-ability-type={ability.abilityType}>
+        <p class="ability__name">
+          {ability.name}
+          <span class="flag">{strings.abilityTypes[ability.abilityType]}</span>
+        </p>
+        <p class="ability__summary">{ability.summary}</p>
+      </li>
+    ))
+  }
+</ul>

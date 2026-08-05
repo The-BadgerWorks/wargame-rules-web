@@ -57,6 +57,7 @@
     "strength": "S",
     "armourPenetration": "AP",
     "damage": "D",
+    "abilityKeywords": "Ability keywords",
     "damagedThreshold": "Damaged at or below",
     "role": "Role",
     "abilityType": "Type",

@@ -1,0 +1,78 @@
+---
+// AI-Assisted: Claude Code (model: claude-opus-5) - Ranged and melee weapon profiles (task T027;
+// FR-009, US2 acceptance scenario 2).
+//
+// One component serves both kinds, differing only in whether the Range column exists: the bundle
+// omits `range` on melee profiles rather than storing a placeholder, so a shared table with a blank
+// column would invent data that is not there.
+//
+// `abilityKeywords` is a comma-separated list of KEYWORDS and nothing else - the bundle carries no
+// weapon rules-text field at all, by upstream design (Principle 4). It is split and rendered as
+// discrete tokens so that a template can never accidentally present a sentence here.
+import strings from '../chrome-strings.json';
+import type { DatasheetWeapon } from '../data/bundle.ts';
+
+interface Props {
+  weapons: readonly DatasheetWeapon[];
+  kind: 'ranged' | 'melee';
+}
+
+const { weapons, kind } = Astro.props;
+
+const heading = kind === 'ranged' ? strings.headings.rangedWeapons : strings.headings.meleeWeapons;
+const showRange = kind === 'ranged';
+const showKeywords = weapons.some((weapon) => (weapon.abilityKeywords ?? '') !== '');
+
+function keywordsOf(weapon: DatasheetWeapon): string[] {
+  return (weapon.abilityKeywords ?? '')
+    .split(',')
+    .map((keyword) => keyword.trim())
+    .filter((keyword) => keyword.length > 0);
+}
+---
+
+{
+  weapons.length > 0 && (
+    <section class="weapon-section">
+      <h2>{heading}</h2>
+      <div class="table-scroll">
+        <table class="weapons">
+          <thead>
+            <tr>
+              <th scope="col">{strings.headings.models}</th>
+              {showRange && <th scope="col">{strings.labels.range}</th>}
+              <th scope="col">{strings.labels.attacks}</th>
+              <th scope="col">{strings.labels.skill}</th>
+              <th scope="col">{strings.labels.strength}</th>
+              <th scope="col">{strings.labels.armourPenetration}</th>
+              <th scope="col">{strings.labels.damage}</th>
+              {showKeywords && <th scope="col">{strings.labels.abilityKeywords}</th>}
+            </tr>
+          </thead>
+          <tbody>
+            {weapons.map((weapon) => (
+              <tr data-weapon={weapon.line} data-weapon-kind={kind}>
+                <th scope="row">{weapon.name}</th>
+                {showRange && <td class="mono">{weapon.range}</td>}
+                <td class="mono">{weapon.attacks}</td>
+                <td class="mono">{weapon.skill}</td>
+                <td class="mono">{weapon.strength}</td>
+                <td class="mono">{weapon.armourPenetration}</td>
+                <td class="mono">{weapon.damage}</td>
+                {showKeywords && (
+                  <td>
+                    <ul class="weapon-keywords">
+                      {keywordsOf(weapon).map((keyword) => (
+                        <li>{keyword}</li>
+                      ))}
+                    </ul>
+                  </td>
+                )}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  )
+}
