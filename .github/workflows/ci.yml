@@ -76,7 +76,7 @@ jobs:
           fi
 
           echo "Changed files:"
-          echo "$changed" | sed 's/^/  /'
+          echo "  ${changed//$'\n'/$'\n'  }"
 
           content="$(echo "$changed" | grep -E '^(src|public|scripts|test|e2e)/' || true)"
           config="$(echo "$changed" | grep -E '^(wrangler\.jsonc|\.github/|docs/)' || true)"
@@ -84,9 +84,9 @@ jobs:
           if [ -n "$content" ] && [ -n "$config" ]; then
             echo "::error::This pull request mixes content and configuration paths."
             echo "Content paths changed:"
-            echo "$content" | sed 's/^/  /'
+            echo "  ${content//$'\n'/$'\n'  }"
             echo "Configuration paths changed:"
-            echo "$config" | sed 's/^/  /'
+            echo "  ${config//$'\n'/$'\n'  }"
             echo "Split them into separate pull requests (plan.md, Separation gate)."
             exit 1
           fi
