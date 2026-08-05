@@ -13,7 +13,7 @@
 // `setup` is wired as Vitest's `globalSetup` (vitest.config.ts), so the build happens exactly once
 // before any test file runs, rather than once per worker.
 import { execFile } from 'node:child_process';
-import { readFile } from 'node:fs/promises';
+import { readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
@@ -22,36 +22,57 @@ const execFileAsync = promisify(execFile);
 
 export const REPO_ROOT = fileURLToPath(new URL('../../', import.meta.url));
 
-/** Kept out of `dist/` so a test build can never be mistaken for, or deployed as, a real build. */
-export const OUT_DIR = 'dist-test';
+/**
+ * Two builds, both kept out of `dist/` so a test build can never be mistaken for, or deployed as, a
+ * real build:
+ *
+ *   current    the non-withdrawn fixture — what every page test asserts against
+ *   withdrawn  the all-entries-withdrawn fixture — SC-004's other half
+ *
+ * The second build exists because SC-004 is a claim about 100% and 0% of pages in the two states,
+ * and only a real build of each state can be counted. Both are cheap: the synthetic bundle renders
+ * 17 pages.
+ */
+export const OUT_DIR = 'dist-test/current';
+export const OUT_DIR_WITHDRAWN = 'dist-test/withdrawn';
 
 const ASTRO_BIN = path.join(REPO_ROOT, 'node_modules', 'astro', 'bin', 'astro.mjs');
+const BUILD_INFO_SCRIPT = path.join(REPO_ROOT, 'scripts', 'build-info.mjs');
+
 const FIXTURE_MANIFEST = './test/fixtures/manifest-current.json';
+const FIXTURE_MANIFEST_WITHDRAWN = './test/fixtures/manifest-all-withdrawn.json';
+
+async function build(outDir: string, manifest: string): Promise<void> {
+  const env = {
+    ...process.env,
+    WGC_WEB_CHANNEL: 'published',
+    WGC_WEB_MANIFEST_URL: manifest,
+  };
+  const options = { cwd: REPO_ROOT, env, maxBuffer: 64 * 1024 * 1024 };
+
+  await execFileAsync(process.execPath, [ASTRO_BIN, 'build', '--outDir', outDir], options);
+  // The same step `npm run build` runs, so a test build carries the same dist/build-info.json the
+  // deployed site does and the banner and verify-dist assertions have something real to read.
+  await execFileAsync(process.execPath, [BUILD_INFO_SCRIPT, '--out-dir', outDir], options);
+}
 
 /** Vitest `globalSetup` entry point. Runs once, before the first test file. */
 export async function setup(): Promise<void> {
-  await execFileAsync(process.execPath, [ASTRO_BIN, 'build', '--outDir', OUT_DIR], {
-    cwd: REPO_ROOT,
-    env: {
-      ...process.env,
-      WGC_WEB_CHANNEL: 'published',
-      WGC_WEB_MANIFEST_URL: FIXTURE_MANIFEST,
-    },
-    maxBuffer: 64 * 1024 * 1024,
-  });
+  await build(OUT_DIR, FIXTURE_MANIFEST);
+  await build(OUT_DIR_WITHDRAWN, FIXTURE_MANIFEST_WITHDRAWN);
 }
 
-function fileFor(route: string): string {
-  if (route === '/404') return path.join(REPO_ROOT, OUT_DIR, '404.html');
+function fileFor(route: string, outDir: string = OUT_DIR): string {
+  if (route === '/404') return path.join(REPO_ROOT, outDir, '404.html');
   if (!route.startsWith('/') || !route.endsWith('/')) {
     throw new Error(`Route "${route}" is not a canonical trailing-slash route (research D1).`);
   }
-  return path.join(REPO_ROOT, OUT_DIR, route.slice(1), 'index.html');
+  return path.join(REPO_ROOT, outDir, route.slice(1), 'index.html');
 }
 
 /** The built HTML for a route. Throws with the route in the message if the build never emitted it. */
-export async function page(route: string): Promise<string> {
-  const file = fileFor(route);
+export async function page(route: string, outDir: string = OUT_DIR): Promise<string> {
+  const file = fileFor(route, outDir);
   try {
     return await readFile(file, 'utf8');
   } catch (cause) {
@@ -60,13 +81,44 @@ export async function page(route: string): Promise<string> {
 }
 
 /** True when the build emitted a page for the route. Used to assert a page was NOT generated. */
-export async function pageExists(route: string): Promise<boolean> {
+export async function pageExists(route: string, outDir: string = OUT_DIR): Promise<boolean> {
   try {
-    await readFile(fileFor(route), 'utf8');
+    await readFile(fileFor(route, outDir), 'utf8');
     return true;
   } catch {
     return false;
   }
+}
+
+async function htmlFilesIn(dir: string): Promise<string[]> {
+  const found: string[] = [];
+  for (const entry of await readdir(dir, { withFileTypes: true })) {
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) found.push(...(await htmlFilesIn(full)));
+    else if (entry.isFile() && entry.name.endsWith('.html')) found.push(full);
+  }
+  return found;
+}
+
+/**
+ * Every rendered page of a build, keyed by its path relative to the output directory. This is what
+ * turns a per-component assertion into SC-004's site-wide one: a claim about "100% of pages" has to
+ * be measured over the actual set of pages, not over a sample a test remembered to list.
+ */
+export async function allPages(outDir: string = OUT_DIR): Promise<Map<string, string>> {
+  const root = path.join(REPO_ROOT, outDir);
+  const files = await htmlFilesIn(root);
+  const pages = new Map<string, string>();
+  for (const file of files) {
+    pages.set(path.relative(root, file).split(path.sep).join('/'), await readFile(file, 'utf8'));
+  }
+  return pages;
+}
+
+/** A build's `build-info.json`, parsed. Throws if the build never wrote one. */
+export async function buildInfo(outDir: string = OUT_DIR): Promise<Record<string, unknown>> {
+  const file = path.join(REPO_ROOT, outDir, 'build-info.json');
+  return JSON.parse(await readFile(file, 'utf8')) as Record<string, unknown>;
 }
 
 // ---------------------------------------------------------------------------

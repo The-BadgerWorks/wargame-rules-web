@@ -6,11 +6,11 @@
   "description": "Unofficial static rules-reference site built from the published wargame-rules-data bundle.",
   "license": "MIT",
   "engines": {
-    "node": ">=22"
+    "node": ">=22.18"
   },
   "scripts": {
     "dev": "astro dev",
-    "build": "astro check && astro build && node scripts/verify-dist.mjs",
+    "build": "astro check && astro build && node scripts/build-info.mjs && node scripts/verify-dist.mjs",
     "preview": "astro preview",
     "test": "vitest run",
     "test:e2e": "playwright test",
