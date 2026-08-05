@@ -1,16 +1,23 @@
-// AI-Assisted: Claude Code (model: claude-opus-5) - Assets-only Worker configuration for the
-// rules-reference site (task T002, research D3). Deliberately carries no `main` and no `binding`:
-// the deployed artifact is static files only, so there is no Worker script, no request-time
-// rendering (FR-021), and no credential to serve. `not_found_handling` routes an unmatched path
-// to the pre-rendered 404 page (research D1 — URL continuity across rules versions is not
-// guaranteed, so a removed entity's old URL 404s by design).
+// AI-Assisted: Claude Code (model: claude-fable-5) - Worker configuration: static assets behind
+// the members gate (worker/index.js). The site is still a static build with no request-time
+// rendering (FR-021); the Worker only verifies the shared members session cookie minted by
+// core-website and redirects unauthenticated visitors to the main-site login. `run_worker_first`
+// is required — without it Cloudflare serves matching static files directly and the gate would
+// be bypassed. `not_found_handling` still routes unmatched paths to the pre-rendered 404 page
+// (research D1 — URL continuity across rules versions is not guaranteed, so a removed entity's
+// old URL 404s by design).
+// Secret (set in dashboard or `npx wrangler secret put`, never in the repo): MEMBERS_PASSWORD —
+// must hold the SAME value as core-website's secret or session verification fails.
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "wargame-rules-web",
+  "main": "worker/index.js",
   "compatibility_date": "2026-08-04",
   "assets": {
     "directory": "./dist",
-    "not_found_handling": "404-page"
+    "binding": "ASSETS",
+    "not_found_handling": "404-page",
+    "run_worker_first": true
   },
   "observability": {
     "enabled": true
