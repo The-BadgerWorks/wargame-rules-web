@@ -1,0 +1,106 @@
+{
+  "site": {
+    "name": "Wargame Rules Reference",
+    "tagline": "A read-only reference for the published curated rules data."
+  },
+  "nav": {
+    "skipToContent": "Skip to content",
+    "home": "All factions",
+    "breadcrumb": "Breadcrumb"
+  },
+  "banner": {
+    "label": "Rules version",
+    "publishedLabel": "Published",
+    "sourceLabel": "Source",
+    "withdrawnHeading": "This rules version has been withdrawn",
+    "withdrawnReasonLabel": "Recorded reason",
+    "withdrawnNoReason": "No reason was recorded.",
+    "withdrawnStanding": "The reference below is still the data this site was built from, and is shown unchanged."
+  },
+  "headings": {
+    "factions": "Factions",
+    "subFactions": "Sub-factions",
+    "parentFaction": "Parent faction",
+    "detachments": "Detachments",
+    "units": "Units",
+    "restrictions": "Restrictions",
+    "enhancements": "Enhancements",
+    "models": "Models",
+    "rangedWeapons": "Ranged weapons",
+    "meleeWeapons": "Melee weapons",
+    "abilities": "Abilities",
+    "keywords": "Keywords",
+    "points": "Points",
+    "wargearOptions": "Wargear options",
+    "leads": "Can lead"
+  },
+  "labels": {
+    "detachmentPointsCost": "Detachment points",
+    "points": "Points",
+    "maxPerArmy": "Max per army",
+    "maxCopiesPerArmy": "Max copies per army",
+    "modelCount": "Models",
+    "copyIndexMin": "From copy",
+    "pointsDelta": "Points change",
+    "movement": "M",
+    "toughness": "T",
+    "save": "Sv",
+    "invulnSave": "Inv",
+    "wounds": "W",
+    "leadership": "Ld",
+    "objectiveControl": "OC",
+    "baseSize": "Base",
+    "range": "Range",
+    "attacks": "A",
+    "skill": "Skill",
+    "strength": "S",
+    "armourPenetration": "AP",
+    "damage": "D",
+    "damagedThreshold": "Damaged at or below",
+    "role": "Role",
+    "abilityType": "Type",
+    "eligibility": "Eligibility",
+    "detailEdition": "Detail taken from edition",
+    "unverifiedPricing": "Unverified points",
+    "unverifiedPricingNote": "This points value has not been verified against a published source.",
+    "filterUnits": "Filter units",
+    "filterByCategory": "Filter by category"
+  },
+  "flags": {
+    "battleline": "Battleline",
+    "character": "Character",
+    "epicHero": "Epic Hero",
+    "dedicatedTransport": "Dedicated Transport",
+    "legends": "Legends"
+  },
+  "abilityTypes": {
+    "core": "Core",
+    "faction": "Faction",
+    "datasheet": "Datasheet"
+  },
+  "eligibilityTypes": {
+    "requires_keyword": "Requires keyword",
+    "forbids_keyword": "Cannot be taken by keyword",
+    "datasheet_allowlist": "Restricted to datasheet"
+  },
+  "empty": {
+    "detachments": "No detachments recorded.",
+    "units": "No units recorded.",
+    "restrictions": "No restrictions recorded.",
+    "enhancements": "No enhancements.",
+    "wargearOptions": "No cost-bearing wargear options.",
+    "eligibility": "No eligibility rule recorded.",
+    "leads": "No leadable units recorded.",
+    "filterNoMatches": "No units match the filter."
+  },
+  "notFound": {
+    "title": "Page not found",
+    "heading": "Page not found",
+    "body": "This site shows only the single rules version it was built from, so an address that named an entry of an earlier version may no longer exist.",
+    "backToIndex": "Go to the faction index"
+  },
+  "disclaimer": {
+    "heading": "Unofficial",
+    "body": "This site is unofficial and is not affiliated with, endorsed by, sponsored by, or approved by Games Workshop. It shows mechanical values and original mechanics-only summaries only, and adds no lore, no narrative text, no publisher rules text and no artwork."
+  }
+}
