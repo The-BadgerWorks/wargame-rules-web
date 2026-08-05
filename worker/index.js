@@ -4,24 +4,27 @@
 // must carry a valid members session cookie or it is redirected to the login
 // page on the main site (battlebadgerstudio.com/login/), which redirects back
 // here after a successful login. There are no auth endpoints in this Worker —
-// login/logout live in core-website's gate; this side only verifies.
+// accounts live in Supabase and login/logout live in core-website's gate;
+// this side only verifies the cookie core-website mints.
 //
-// The cookie is an HMAC-signed expiry timestamp minted by core-website with a
-// key derived from the shared MEMBERS_PASSWORD secret. This Worker must carry
-// the SAME secret (same value) or every session verification fails. The
-// cookie itself arrives because core-website sets it domain-wide
-// (Domain=battlebadgerstudio.com). Constants below must stay in lockstep with
+// Cookie format: "<expiryMs>.<flags>.<hmacHex>", HMAC-signed with a key
+// derived from the shared SESSION_SECRET. This Worker must carry the SAME
+// secret value as core-website or every verification fails; it needs no
+// Supabase configuration at all. flags contains "s" for supporter accounts —
+// required only when REQUIRE_SUPPORTER === "true" (kept "false" until
+// Patreon/BMC entitlements land; flip it in lockstep with core-website).
+// The cookie arrives cross-subdomain because core-website sets it with
+// Domain=battlebadgerstudio.com. Constants below must stay in lockstep with
 // core-website/worker/index.js.
 //
-// Fail-closed: no secret configured -> everything redirects to login (which
-// itself refuses with 503 until its secret is set).
+// Fail-closed: no secret configured -> everything redirects to login.
 //
 // Local dev: `wrangler dev` on localhost can't receive the production
 // cookie; put GATE_DISABLED = "true" in .dev.vars (gitignored) to bypass the
 // gate locally. `npm run dev` / `astro dev` never runs this Worker at all.
 
 const COOKIE_NAME = 'bbs_session';
-const KEY_CONTEXT = 'bbs-members-gate-v1';
+const KEY_CONTEXT = 'bbs-members-gate-v2';
 const LOGIN_URL = 'https://battlebadgerstudio.com/login/';
 const CANONICAL_HOST = 'wgrules.battlebadgerstudio.com';
 
@@ -49,22 +52,30 @@ export default {
 };
 
 async function hasValidSession(request, env) {
-  if (!env.MEMBERS_PASSWORD) return false;
+  if (!env.SESSION_SECRET) return false;
   const raw = getCookie(request, COOKIE_NAME);
   if (!raw) return false;
-  const [expiryStr, sigHex] = raw.split('.');
+  const parts = raw.split('.');
+  if (parts.length !== 3) return false;
+  const [expiryStr, flags, sigHex] = parts;
   const expiry = Number(expiryStr);
-  if (!Number.isFinite(expiry) || expiry < Date.now() || !sigHex) return false;
+  if (!Number.isFinite(expiry) || expiry < Date.now()) return false;
+  if (env.REQUIRE_SUPPORTER === 'true' && !flags.includes('s')) return false;
   const key = await signingKey(env);
   const sig = hexToBytes(sigHex);
   if (!sig) return false;
-  return crypto.subtle.verify('HMAC', key, sig, new TextEncoder().encode(expiryStr));
+  return crypto.subtle.verify(
+    'HMAC',
+    key,
+    sig,
+    new TextEncoder().encode(`${expiryStr}.${flags}`)
+  );
 }
 
 async function signingKey(env) {
   const material = await crypto.subtle.digest(
     'SHA-256',
-    new TextEncoder().encode(`${env.MEMBERS_PASSWORD}:${KEY_CONTEXT}`)
+    new TextEncoder().encode(`${env.SESSION_SECRET}:${KEY_CONTEXT}`)
   );
   return crypto.subtle.importKey('raw', material, { name: 'HMAC', hash: 'SHA-256' }, false, [
     'verify',

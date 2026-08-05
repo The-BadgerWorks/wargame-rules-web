@@ -6,13 +6,18 @@
 // be bypassed. `not_found_handling` still routes unmatched paths to the pre-rendered 404 page
 // (research D1 — URL continuity across rules versions is not guaranteed, so a removed entity's
 // old URL 404s by design).
-// Secret (set in dashboard or `npx wrangler secret put`, never in the repo): MEMBERS_PASSWORD —
+// Secret (set in dashboard or `npx wrangler secret put`, never in the repo): SESSION_SECRET —
 // must hold the SAME value as core-website's secret or session verification fails.
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "wargame-rules-web",
   "main": "worker/index.js",
   "compatibility_date": "2026-08-04",
+  "vars": {
+    // Flip to "true" in lockstep with core-website when supporter
+    // entitlements (Patreon/BMC) go live.
+    "REQUIRE_SUPPORTER": "false"
+  },
   "assets": {
     "directory": "./dist",
     "binding": "ASSETS",
