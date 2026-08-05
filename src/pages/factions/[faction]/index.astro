@@ -13,6 +13,7 @@
 // under a heading reads as a broken page rather than as accurate data.
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import FlagBadges from '../../../components/FlagBadges.astro';
+import UnitFilter from '../../../components/UnitFilter.astro';
 import strings from '../../../chrome-strings.json';
 import {
   detachmentHref,
@@ -26,6 +27,7 @@ import {
   unitsByFaction,
   type Faction,
 } from '../../../data/bundle.ts';
+import { flagAttribute, searchAttribute } from '../../../data/flags.ts';
 import { factionCode } from '../../../data/slugs.ts';
 
 export function getStaticPaths() {
@@ -86,16 +88,29 @@ const ownUnits = unitsByFaction.get(faction.id) ?? [];
         {strings.empty.units}
       </p>
     ) : (
-      <ul class="entity-list">
-        {ownUnits.map((unit) => (
-          <li class="entity-list__item" data-unit={unitSlugById.get(unit.id)}>
-            <a href={unitHref(unit)}>{unit.name}</a>
-            {/* FR-015 (task T030): the same badges the unit's own page shows, from the same
-                component, so a listing and a datacard cannot disagree. */}
-            <FlagBadges datasheet={unit} />
-          </li>
-        ))}
-      </ul>
+      <>
+        {/* FR-016/FR-017 (task T035). The filter narrows the list below it and nothing else, so it
+            is rendered only where there is a list to narrow. */}
+        <UnitFilter />
+        <ul class="entity-list" data-unit-list>
+          {/* data-search and data-flags are the filter's whole payload: the keys it matches on,
+              delivered with the row they belong to, so narrowing needs no request and no second
+              copy of the data (research D5). */}
+          {ownUnits.map((unit) => (
+            <li
+              class="entity-list__item"
+              data-unit={unitSlugById.get(unit.id)}
+              data-search={searchAttribute(unit)}
+              data-flags={flagAttribute(unit)}
+            >
+              <a href={unitHref(unit)}>{unit.name}</a>
+              {/* FR-015 (task T030): the same badges the unit's own page shows, from the same
+                  component, so a listing and a datacard cannot disagree. */}
+              <FlagBadges datasheet={unit} />
+            </li>
+          ))}
+        </ul>
+      </>
     )
   }
 </BaseLayout>

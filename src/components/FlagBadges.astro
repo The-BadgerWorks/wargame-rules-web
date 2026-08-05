@@ -10,6 +10,7 @@
 // stays in the faction's unit list and is visibly labelled.
 import strings from '../chrome-strings.json';
 import type { Datasheet } from '../data/bundle.ts';
+import { flagsOf } from '../data/flags.ts';
 
 interface Props {
   datasheet: Datasheet;
@@ -17,17 +18,10 @@ interface Props {
 
 const { datasheet } = Astro.props;
 
-const badges: readonly { key: string; label: string }[] = [
-  { key: 'battleline', label: strings.flags.battleline, on: datasheet.isBattleline },
-  { key: 'character', label: strings.flags.character, on: datasheet.isCharacter },
-  { key: 'epic-hero', label: strings.flags.epicHero, on: datasheet.isEpicHero },
-  {
-    key: 'dedicated-transport',
-    label: strings.flags.dedicatedTransport,
-    on: datasheet.isDedicatedTransport,
-  },
-  { key: 'legends', label: strings.flags.legends, on: datasheet.isLegends },
-].filter((badge) => badge.on);
+// The vocabulary itself lives in src/data/flags.ts (task T034), because the filter's category
+// options (FR-017) must offer exactly the keys these badges carry. Two independent lists would let
+// an option exist that matches no row.
+const badges = flagsOf(datasheet);
 ---
 
 {
@@ -35,7 +29,7 @@ const badges: readonly { key: string; label: string }[] = [
     <span class="flag-badges">
       {badges.map((badge) => (
         <span class="flag" data-flag={badge.key}>
-          {badge.label}
+          {strings.flags[badge.stringKey]}
         </span>
       ))}
     </span>

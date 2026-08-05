@@ -1,0 +1,85 @@
+---
+// AI-Assisted: Claude Code (model: claude-opus-5) - The client-side unit filter (task T034;
+// FR-016, FR-017, US3).
+//
+// Research D5 in one line: the search key is already on each unit row as `data-search` /
+// `data-flags`, so this component ships no data at all - only the controls and one bundled script
+// that toggles `hidden`. No JSON island, no framework, nothing to fetch. FR-016's "no server
+// request per keystroke" and "against data already delivered to the page" are therefore true by
+// construction rather than by discipline: there is nothing left to request.
+//
+// The controls are a plain <div role="search">, never a <form>: a form can be submitted by Enter in
+// a text field, and a submit is a navigation - exactly what FR-016 forbids and what e2e/filter.spec
+// asserts against.
+//
+// Progressive enhancement: with the script blocked, every row stays visible and the controls simply
+// do nothing. A filter that fails open shows the reader more data, never less.
+import strings from '../chrome-strings.json';
+import { UNIT_FLAGS } from '../data/flags.ts';
+---
+
+<div class="unit-filter" data-unit-filter role="search">
+  <p class="unit-filter__field">
+    <label class="meta-label" for="unit-filter-text">{strings.labels.filterUnits}</label>
+    <input id="unit-filter-text" type="search" autocomplete="off" data-unit-filter-text />
+  </p>
+
+  <p class="unit-filter__field">
+    <label class="meta-label" for="unit-filter-flag">{strings.labels.filterByCategory}</label>
+    <select id="unit-filter-flag" data-unit-filter-flag>
+      <option value="">{strings.labels.filterAllCategories}</option>
+      {
+        UNIT_FLAGS.map((flag) => (
+          <option value={flag.key}>{strings.flags[flag.stringKey]}</option>
+        ))
+      }
+    </select>
+  </p>
+</div>
+
+<p class="empty-state" data-unit-filter-empty role="status" hidden>
+  {strings.empty.filterNoMatches}
+</p>
+
+<script>
+  // Bundled (not `is:inline`), so Astro type-checks and minifies it and a strict CSP stays possible
+  // - both of which `define:vars` would forfeit (research D5).
+  //
+  // Every page of the site loads this bundle; only a faction page carries the controls, so the
+  // guard below is the whole "does this page have a filter" test.
+  const controls = document.querySelector<HTMLElement>('[data-unit-filter]');
+  const list = document.querySelector<HTMLElement>('[data-unit-list]');
+
+  if (controls && list) {
+    const textField = controls.querySelector<HTMLInputElement>('[data-unit-filter-text]');
+    const flagField = controls.querySelector<HTMLSelectElement>('[data-unit-filter-flag]');
+    const noMatches = document.querySelector<HTMLElement>('[data-unit-filter-empty]');
+    const rows = Array.from(list.querySelectorAll<HTMLElement>('[data-unit]'));
+
+    const apply = (): void => {
+      const query = (textField?.value ?? '').trim().toLowerCase();
+      const flag = flagField?.value ?? '';
+      let shown = 0;
+
+      for (const row of rows) {
+        // Both keys were computed and lowercased at build time (src/data/flags.ts), so a keystroke
+        // costs one substring test per row and nothing else.
+        const matchesText = query === '' || (row.dataset.search ?? '').includes(query);
+        const matchesFlag = flag === '' || (row.dataset.flags ?? '').split(' ').includes(flag);
+        const matches = matchesText && matchesFlag;
+
+        row.hidden = !matches;
+        if (matches) shown += 1;
+      }
+
+      if (noMatches) noMatches.hidden = shown > 0;
+    };
+
+    textField?.addEventListener('input', apply);
+    flagField?.addEventListener('change', apply);
+
+    // Run once on load so a field restored by the browser's back-forward cache or by autofill is
+    // reflected in the list rather than silently ignored.
+    apply();
+  }
+</script>
