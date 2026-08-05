@@ -1,0 +1,37 @@
+# AI-Assisted: Claude Code (model: claude-opus-5) - Review routing for the two path classes of
+# plan.md's Separation gate (task T004).
+#
+# Two classes, and a pull request may touch one or the other but never both — .github/workflows/ci.yml
+# fails a pull request that mixes them:
+#
+#   content        src/  public/  scripts/  test/  e2e/
+#   configuration  wrangler.jsonc  .github/  docs/
+#
+# Configuration changes carry the Principle 11 limitation recorded in plan.md: Workers Builds deploys
+# whatever the merge commit contains, so a wrangler.jsonc change ships in the same deployment as the
+# content in that commit. There is no second pipeline to promote configuration through, so the
+# compensating control is review: every configuration path below requires a CODEOWNERS review, and
+# GitHub does not count a pull request's own author as an approving reviewer — which is what makes
+# the required reviewer a NON-AUTHOR reviewer.
+#
+# This file is only load-bearing when branch protection on `main` has "Require review from Code
+# Owners" enabled (task T006). Enabling it is part of that task's declared desired state.
+
+# Default owner for everything not matched below.
+*                       @adhoxx
+
+# ---------------------------------------------------------------------------
+# Content — the site itself and its checks.
+# ---------------------------------------------------------------------------
+/src/                   @adhoxx
+/public/                @adhoxx
+/scripts/               @adhoxx
+/test/                  @adhoxx
+/e2e/                   @adhoxx
+
+# ---------------------------------------------------------------------------
+# Configuration — the delivery surface. Non-author review required.
+# ---------------------------------------------------------------------------
+/wrangler.jsonc         @adhoxx
+/.github/               @adhoxx
+/docs/                  @adhoxx

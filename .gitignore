@@ -1,0 +1,29 @@
+# AI-Assisted: Claude Code (model: claude-opus-5) - Repo hygiene for the rules-reference site
+# (task T003). The build's data input is fetched, never committed: the verified bundle is cached
+# under node_modules/.cache/ keyed by its sha256 (research D4) and must never enter git.
+
+# build output
+dist/
+.astro/
+
+# dependencies and the dev-only verified-bundle cache
+node_modules/
+node_modules/.cache/
+
+# test and tooling output
+test-results/
+playwright-report/
+coverage/
+.wrangler/
+
+# local environment overrides
+.env
+.env.*
+!.env.example
+
+# editor and OS noise
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json

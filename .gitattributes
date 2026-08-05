@@ -1,0 +1,6 @@
+# AI-Assisted: Claude Code (model: claude-opus-5) - Line-ending policy (task T003). Test fixture
+# manifests carry the sha256 and byte size of the fixture bundles, so any line-ending translation
+# on checkout would break the integrity assertion in src/data/bundle.ts. LF everywhere, and the
+# fixtures are pinned explicitly.
+* text=auto eol=lf
+test/fixtures/*.json -text

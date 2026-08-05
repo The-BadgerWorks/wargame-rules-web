@@ -1,0 +1,94 @@
+# AI-Assisted: Claude Code (model: claude-opus-5) - Pull-request verification for the
+# rules-reference site (task T008): the fast feedback loop (astro check + vitest against the
+# synthetic fixtures), actionlint on workflow changes, and the path-exclusivity check that enforces
+# plan.md's Separation gate. The release-gating checks are NOT here — they are part of
+# `npm run build`, which Cloudflare Workers Builds runs (research D3).
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: astro check + vitest
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Neither step reaches the network for rules data: `astro check` type-checks without
+      # evaluating the build-time fetch, and vitest is pointed at the synthetic fixtures by
+      # vitest.config.ts. The live manifest is only fetched by `astro build`, which Cloudflare runs.
+      - name: astro check
+        run: npm run check
+
+      - name: vitest
+        run: npm test
+
+  actionlint:
+    name: actionlint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Lint workflows
+        run: |
+          docker run --rm -v "$PWD:/repo" --workdir /repo rhysd/actionlint:1.7.7 -color
+
+  path-exclusivity:
+    name: content and configuration are not mixed
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # plan.md's Separation gate. Workers Builds deploys whatever the merge commit contains, so a
+      # configuration change ships in the same deployment as any content in that commit. There is no
+      # second pipeline to promote configuration through, so the compensating control is that a
+      # single pull request may never carry both classes.
+      - name: Classify changed paths
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          set -euo pipefail
+          git fetch --no-tags --depth=1 origin "$BASE_REF"
+          changed="$(git diff --name-only "origin/${BASE_REF}...HEAD")"
+
+          if [ -z "$changed" ]; then
+            echo "No changed files; nothing to classify."
+            exit 0
+          fi
+
+          echo "Changed files:"
+          echo "$changed" | sed 's/^/  /'
+
+          content="$(echo "$changed" | grep -E '^(src|public|scripts|test|e2e)/' || true)"
+          config="$(echo "$changed" | grep -E '^(wrangler\.jsonc|\.github/|docs/)' || true)"
+
+          if [ -n "$content" ] && [ -n "$config" ]; then
+            echo "::error::This pull request mixes content and configuration paths."
+            echo "Content paths changed:"
+            echo "$content" | sed 's/^/  /'
+            echo "Configuration paths changed:"
+            echo "$config" | sed 's/^/  /'
+            echo "Split them into separate pull requests (plan.md, Separation gate)."
+            exit 1
+          fi
+
+          echo "OK: this pull request touches at most one of the two path classes."
