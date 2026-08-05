@@ -1,0 +1,32 @@
+{
+  "manifestVersion": 1,
+  "generatedAt": "2026-01-20T09:00:00Z",
+  "versions": [
+    {
+      "rulesVersionId": "synth-2025-12",
+      "displayName": "Synthetic Rules 2025.12",
+      "publishedAt": "2025-12-01T00:00:00Z",
+      "editionCodes": ["synth-1e"],
+      "schemaContractVersion": 1,
+      "restrictionVocabularyVersion": 1,
+      "fileUrl": "bundle-synth.json",
+      "sizeBytes": 18405,
+      "sha256": "f3acba70f1ee642cb46ab570a121922bef21e0a210b7d0c4429e9babe943eac7",
+      "withdrawn": true,
+      "withdrawnReason": "Retired when the following release landed."
+    },
+    {
+      "rulesVersionId": "synth-2026-01",
+      "displayName": "Synthetic Rules 2026.01",
+      "publishedAt": "2026-01-15T00:00:00Z",
+      "editionCodes": ["synth-1e"],
+      "schemaContractVersion": 1,
+      "restrictionVocabularyVersion": 1,
+      "fileUrl": "bundle-synth.json",
+      "sizeBytes": 18405,
+      "sha256": "f3acba70f1ee642cb46ab570a121922bef21e0a210b7d0c4429e9babe943eac7",
+      "withdrawn": true,
+      "withdrawnReason": "The points table is under correction; treat every cost here as provisional."
+    }
+  ]
+}

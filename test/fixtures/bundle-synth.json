@@ -1,0 +1,653 @@
+{
+  "bundleFormatVersion": 1,
+  "snapshotMeta": {
+    "schemaContractVersion": 1,
+    "restrictionVocabularyVersion": 1,
+    "rulesVersionId": "synth-2026-01",
+    "publishedAt": "2026-01-15T00:00:00Z",
+    "sourceNote": "Synthetic fixture data authored for tests. Every name below is invented."
+  },
+  "editions": [
+    { "id": "ed-synth-1", "code": "synth-1e", "name": "Synthetic Edition One", "displayOrder": 1 }
+  ],
+  "editionRules": [
+    { "editionId": "ed-synth-1", "ruleKey": "max_detachments", "valueJson": "1" },
+    { "editionId": "ed-synth-1", "ruleKey": "unique_epic_heroes", "valueJson": "true" }
+  ],
+  "gameSizeRules": [
+    {
+      "id": "gs-synth-skirmish",
+      "editionId": "ed-synth-1",
+      "label": "Skirmish",
+      "minPoints": 0,
+      "maxPoints": 1000,
+      "detachmentPointsBudget": 6,
+      "maxDetachments": 1,
+      "maxEnhancements": 2
+    },
+    {
+      "id": "gs-synth-standard",
+      "editionId": "ed-synth-1",
+      "label": "Standard",
+      "minPoints": 1001,
+      "maxPoints": 2000,
+      "detachmentPointsBudget": 12,
+      "maxDetachments": 1,
+      "maxEnhancements": 3
+    }
+  ],
+  "factions": [
+    { "id": "f-hollow-choir", "editionId": "ed-synth-1", "code": "hollow-choir", "name": "Hollow Choir" },
+    { "id": "f-iron-tessellate", "editionId": "ed-synth-1", "code": "iron-tessellate", "name": "Iron Tessellate" },
+    { "id": "f-verdant-concord", "editionId": "ed-synth-1", "code": "verdant-concord", "name": "Verdant Concord" },
+    {
+      "id": "f-verdant-outriders",
+      "editionId": "ed-synth-1",
+      "code": "verdant-outriders",
+      "name": "Verdant Outriders",
+      "parentFactionId": "f-verdant-concord"
+    }
+  ],
+  "detachments": [
+    {
+      "id": "d-lattice-phalanx",
+      "editionId": "ed-synth-1",
+      "factionId": "f-iron-tessellate",
+      "name": "Lattice Phalanx",
+      "detachmentPointsCost": 4,
+      "isLegends": false
+    },
+    {
+      "id": "d-swiftwing-raid",
+      "editionId": "ed-synth-1",
+      "factionId": "f-verdant-outriders",
+      "name": "Swiftwing Raid",
+      "detachmentPointsCost": 3,
+      "isLegends": false
+    },
+    {
+      "id": "d-tangle-vanguard",
+      "editionId": "ed-synth-1",
+      "factionId": "f-verdant-concord",
+      "name": "Tangle Vanguard",
+      "detachmentPointsCost": 3,
+      "isLegends": false
+    },
+    {
+      "id": "d-thorn-legacy",
+      "editionId": "ed-synth-1",
+      "factionId": "f-verdant-concord",
+      "name": "Thorn Legacy",
+      "detachmentPointsCost": 2,
+      "isLegends": true
+    }
+  ],
+  "detachmentRestrictions": [],
+  "enhancements": [
+    {
+      "id": "e-bark-shield",
+      "editionId": "ed-synth-1",
+      "detachmentId": "d-tangle-vanguard",
+      "name": "Bark Shield",
+      "points": 10,
+      "maxPerArmy": 1
+    },
+    {
+      "id": "e-lattice-core",
+      "editionId": "ed-synth-1",
+      "detachmentId": "d-lattice-phalanx",
+      "name": "Lattice Core",
+      "points": 20,
+      "maxPerArmy": 2
+    },
+    {
+      "id": "e-quickened-sap",
+      "editionId": "ed-synth-1",
+      "detachmentId": "d-tangle-vanguard",
+      "name": "Quickened Sap",
+      "points": 15,
+      "maxPerArmy": 1
+    }
+  ],
+  "enhancementEligibility": [],
+  "datasheets": [
+    {
+      "id": "ds-bramble-warden",
+      "editionId": "ed-synth-1",
+      "factionId": "f-verdant-concord",
+      "name": "Bramble Warden",
+      "role": "Infantry",
+      "isLegends": false,
+      "isCharacter": false,
+      "isEpicHero": false,
+      "isBattleline": true,
+      "isDedicatedTransport": false
+    },
+    {
+      "id": "ds-choir-echo",
+      "editionId": "ed-synth-1",
+      "factionId": "f-hollow-choir",
+      "name": "Choir Echo",
+      "role": "Infantry",
+      "isLegends": false,
+      "isCharacter": false,
+      "isEpicHero": false,
+      "isBattleline": false,
+      "isDedicatedTransport": false
+    },
+    {
+      "id": "ds-lattice-drone",
+      "editionId": "ed-synth-1",
+      "factionId": "f-iron-tessellate",
+      "name": "Lattice Drone",
+      "role": "Infantry",
+      "isLegends": false,
+      "isCharacter": false,
+      "isEpicHero": false,
+      "isBattleline": false,
+      "isDedicatedTransport": false,
+      "detailEditionCode": "synth-0e"
+    },
+    {
+      "id": "ds-seedpod-hauler",
+      "editionId": "ed-synth-1",
+      "factionId": "f-verdant-concord",
+      "name": "Seedpod Hauler",
+      "role": "Transport",
+      "isLegends": false,
+      "isCharacter": false,
+      "isEpicHero": false,
+      "isBattleline": false,
+      "isDedicatedTransport": true,
+      "damagedThreshold": 4
+    },
+    {
+      "id": "ds-swiftwing-scout",
+      "editionId": "ed-synth-1",
+      "factionId": "f-verdant-outriders",
+      "name": "Swiftwing Scout",
+      "role": "Cavalry",
+      "isLegends": false,
+      "isCharacter": false,
+      "isEpicHero": false,
+      "isBattleline": false,
+      "isDedicatedTransport": false
+    },
+    {
+      "id": "ds-thicket-matriarch",
+      "editionId": "ed-synth-1",
+      "factionId": "f-verdant-concord",
+      "name": "Thicket Matriarch",
+      "role": "Character",
+      "isLegends": false,
+      "isCharacter": true,
+      "isEpicHero": true,
+      "isBattleline": false,
+      "isDedicatedTransport": false,
+      "maxCopiesPerArmy": 1
+    },
+    {
+      "id": "ds-witherstalk-relic",
+      "editionId": "ed-synth-1",
+      "factionId": "f-verdant-concord",
+      "name": "Witherstalk Relic",
+      "role": "Vehicle",
+      "isLegends": true,
+      "isCharacter": false,
+      "isEpicHero": false,
+      "isBattleline": false,
+      "isDedicatedTransport": false,
+      "damagedThreshold": 5
+    }
+  ],
+  "datasheetKeywords": [
+    { "datasheetId": "ds-bramble-warden", "keyword": "Battleline", "isFactionKeyword": false },
+    { "datasheetId": "ds-bramble-warden", "keyword": "Infantry", "isFactionKeyword": false },
+    { "datasheetId": "ds-bramble-warden", "keyword": "Verdant Concord", "isFactionKeyword": true },
+    { "datasheetId": "ds-choir-echo", "keyword": "Hollow Choir", "isFactionKeyword": true },
+    { "datasheetId": "ds-choir-echo", "keyword": "Infantry", "isFactionKeyword": false },
+    { "datasheetId": "ds-lattice-drone", "keyword": "Infantry", "isFactionKeyword": false },
+    { "datasheetId": "ds-lattice-drone", "keyword": "Iron Tessellate", "isFactionKeyword": true },
+    { "datasheetId": "ds-seedpod-hauler", "keyword": "Dedicated Transport", "isFactionKeyword": false },
+    { "datasheetId": "ds-seedpod-hauler", "keyword": "Vehicle", "isFactionKeyword": false },
+    { "datasheetId": "ds-seedpod-hauler", "keyword": "Verdant Concord", "isFactionKeyword": true },
+    { "datasheetId": "ds-swiftwing-scout", "keyword": "Mounted", "isFactionKeyword": false },
+    { "datasheetId": "ds-swiftwing-scout", "keyword": "Verdant Outriders", "isFactionKeyword": true },
+    { "datasheetId": "ds-thicket-matriarch", "keyword": "Character", "isFactionKeyword": false },
+    { "datasheetId": "ds-thicket-matriarch", "keyword": "Epic Hero", "isFactionKeyword": false },
+    { "datasheetId": "ds-thicket-matriarch", "keyword": "Infantry", "isFactionKeyword": false },
+    { "datasheetId": "ds-thicket-matriarch", "keyword": "Verdant Concord", "isFactionKeyword": true },
+    { "datasheetId": "ds-witherstalk-relic", "keyword": "Legends", "isFactionKeyword": false },
+    { "datasheetId": "ds-witherstalk-relic", "keyword": "Vehicle", "isFactionKeyword": false },
+    { "datasheetId": "ds-witherstalk-relic", "keyword": "Verdant Concord", "isFactionKeyword": true }
+  ],
+  "datasheetModels": [
+    {
+      "datasheetId": "ds-bramble-warden",
+      "line": 1,
+      "name": "Bramble Warden",
+      "movement": "6\"",
+      "toughness": 4,
+      "save": "3+",
+      "wounds": 2,
+      "leadership": "6+",
+      "objectiveControl": 2,
+      "baseSize": "32mm"
+    },
+    {
+      "datasheetId": "ds-bramble-warden",
+      "line": 2,
+      "name": "Bramble Warden Elder",
+      "movement": "6\"",
+      "toughness": 4,
+      "save": "3+",
+      "wounds": 3,
+      "leadership": "6+",
+      "objectiveControl": 2,
+      "baseSize": "32mm"
+    },
+    {
+      "datasheetId": "ds-choir-echo",
+      "line": 1,
+      "name": "Choir Echo",
+      "movement": "5\"",
+      "toughness": 3,
+      "save": "5+",
+      "wounds": 1,
+      "leadership": "7+",
+      "objectiveControl": 1,
+      "baseSize": "25mm"
+    },
+    {
+      "datasheetId": "ds-lattice-drone",
+      "line": 1,
+      "name": "Lattice Drone",
+      "movement": "10\"",
+      "toughness": 5,
+      "save": "4+",
+      "wounds": 3,
+      "leadership": "6+",
+      "objectiveControl": 1,
+      "baseSize": "40mm"
+    },
+    {
+      "datasheetId": "ds-seedpod-hauler",
+      "line": 1,
+      "name": "Seedpod Hauler",
+      "movement": "10\"",
+      "toughness": 9,
+      "save": "3+",
+      "wounds": 10,
+      "leadership": "6+",
+      "objectiveControl": 2,
+      "baseSize": "100mm"
+    },
+    {
+      "datasheetId": "ds-swiftwing-scout",
+      "line": 1,
+      "name": "Swiftwing Scout",
+      "movement": "12\"",
+      "toughness": 4,
+      "save": "4+",
+      "wounds": 3,
+      "leadership": "6+",
+      "objectiveControl": 2,
+      "baseSize": "60mm"
+    },
+    {
+      "datasheetId": "ds-thicket-matriarch",
+      "line": 1,
+      "name": "Thicket Matriarch",
+      "movement": "6\"",
+      "toughness": 5,
+      "save": "2+",
+      "invulnSave": "4+",
+      "wounds": 6,
+      "leadership": "5+",
+      "objectiveControl": 1,
+      "baseSize": "40mm"
+    },
+    {
+      "datasheetId": "ds-witherstalk-relic",
+      "line": 1,
+      "name": "Witherstalk Relic",
+      "movement": "8\"",
+      "toughness": 10,
+      "save": "2+",
+      "wounds": 12,
+      "leadership": "6+",
+      "objectiveControl": 3,
+      "baseSize": "120mm"
+    }
+  ],
+  "datasheetWeapons": [
+    {
+      "datasheetId": "ds-bramble-warden",
+      "line": 1,
+      "name": "Sap Carbine",
+      "isMelee": false,
+      "range": "18\"",
+      "attacks": "2",
+      "skill": "3+",
+      "strength": "4",
+      "armourPenetration": "0",
+      "damage": "1",
+      "abilityKeywords": "assault"
+    },
+    {
+      "datasheetId": "ds-bramble-warden",
+      "line": 2,
+      "name": "Thornlance",
+      "isMelee": true,
+      "attacks": "3",
+      "skill": "3+",
+      "strength": "5",
+      "armourPenetration": "-1",
+      "damage": "1"
+    },
+    {
+      "datasheetId": "ds-choir-echo",
+      "line": 1,
+      "name": "Echo Blade",
+      "isMelee": true,
+      "attacks": "2",
+      "skill": "4+",
+      "strength": "3",
+      "armourPenetration": "0",
+      "damage": "1"
+    },
+    {
+      "datasheetId": "ds-lattice-drone",
+      "line": 1,
+      "name": "Lattice Beam",
+      "isMelee": false,
+      "range": "24\"",
+      "attacks": "3",
+      "skill": "4+",
+      "strength": "6",
+      "armourPenetration": "-1",
+      "damage": "1",
+      "abilityKeywords": "lethal hits"
+    },
+    {
+      "datasheetId": "ds-seedpod-hauler",
+      "line": 1,
+      "name": "Hull Spines",
+      "isMelee": true,
+      "attacks": "4",
+      "skill": "4+",
+      "strength": "8",
+      "armourPenetration": "0",
+      "damage": "1"
+    },
+    {
+      "datasheetId": "ds-swiftwing-scout",
+      "line": 1,
+      "name": "Swift Javelin",
+      "isMelee": false,
+      "range": "12\"",
+      "attacks": "1",
+      "skill": "3+",
+      "strength": "5",
+      "armourPenetration": "-1",
+      "damage": "2",
+      "abilityKeywords": "assault,precision"
+    },
+    {
+      "datasheetId": "ds-swiftwing-scout",
+      "line": 2,
+      "name": "Riding Blade",
+      "isMelee": true,
+      "attacks": "3",
+      "skill": "3+",
+      "strength": "4",
+      "armourPenetration": "0",
+      "damage": "1"
+    },
+    {
+      "datasheetId": "ds-thicket-matriarch",
+      "line": 1,
+      "name": "Matriarch Stave",
+      "isMelee": true,
+      "attacks": "5",
+      "skill": "2+",
+      "strength": "7",
+      "armourPenetration": "-2",
+      "damage": "2",
+      "abilityKeywords": "devastating wounds"
+    },
+    {
+      "datasheetId": "ds-witherstalk-relic",
+      "line": 1,
+      "name": "Withering Array",
+      "isMelee": false,
+      "range": "36\"",
+      "attacks": "D6+2",
+      "skill": "3+",
+      "strength": "9",
+      "armourPenetration": "-2",
+      "damage": "3",
+      "abilityKeywords": "blast,heavy"
+    },
+    {
+      "datasheetId": "ds-witherstalk-relic",
+      "line": 2,
+      "name": "Grinding Treads",
+      "isMelee": true,
+      "attacks": "6",
+      "skill": "4+",
+      "strength": "8",
+      "armourPenetration": "-1",
+      "damage": "2"
+    }
+  ],
+  "datasheetAbilities": [
+    {
+      "datasheetId": "ds-bramble-warden",
+      "name": "Rooted Stance",
+      "abilityType": "datasheet",
+      "summary": "While this unit has not moved this turn, add 1 to its Save characteristic."
+    },
+    {
+      "datasheetId": "ds-bramble-warden",
+      "name": "Verdant Resilience",
+      "abilityType": "faction",
+      "summary": "Each time an attack targets this unit at a range greater than 12 inches, subtract 1 from the Hit roll."
+    },
+    {
+      "datasheetId": "ds-choir-echo",
+      "name": "Fading Presence",
+      "abilityType": "datasheet",
+      "summary": "This unit can end a Normal move within Engagement Range of an enemy unit."
+    },
+    {
+      "datasheetId": "ds-lattice-drone",
+      "name": "Tessellate Link",
+      "abilityType": "faction",
+      "summary": "While this unit is within 6 inches of another friendly unit with this ability, add 1 to its Objective Control characteristic."
+    },
+    {
+      "datasheetId": "ds-seedpod-hauler",
+      "name": "Transport",
+      "abilityType": "core",
+      "summary": "This model has a transport capacity of 10 models from its own faction. It cannot carry Vehicle or Mounted models."
+    },
+    {
+      "datasheetId": "ds-swiftwing-scout",
+      "name": "Scouts",
+      "abilityType": "core",
+      "summary": "This unit may make a Normal move of up to 9 inches before the first turn begins."
+    },
+    {
+      "datasheetId": "ds-thicket-matriarch",
+      "name": "Leader",
+      "abilityType": "core",
+      "summary": "This model can be attached to one eligible unit, and is then treated as part of that unit while attached."
+    },
+    {
+      "datasheetId": "ds-thicket-matriarch",
+      "name": "Matriarch's Command",
+      "abilityType": "datasheet",
+      "summary": "Once per battle round, one friendly unit within 12 inches of this model can be targeted by a Stratagem for 0 Command Points."
+    },
+    {
+      "datasheetId": "ds-witherstalk-relic",
+      "name": "Deadly Demise",
+      "abilityType": "core",
+      "summary": "When this model is destroyed, roll one D6; on a 6 each unit within 6 inches suffers D3 mortal wounds."
+    },
+    {
+      "datasheetId": "ds-witherstalk-relic",
+      "name": "Legends Pattern",
+      "abilityType": "datasheet",
+      "summary": "This model may only be included in an army played with the agreement of both players."
+    }
+  ],
+  "datasheetCosts": [
+    {
+      "datasheetId": "ds-bramble-warden",
+      "modelCount": 5,
+      "points": 70,
+      "label": "5 models",
+      "pricingConfidence": "verified"
+    },
+    {
+      "datasheetId": "ds-bramble-warden",
+      "modelCount": 10,
+      "points": 140,
+      "label": "10 models",
+      "pricingConfidence": "verified"
+    },
+    {
+      "datasheetId": "ds-choir-echo",
+      "modelCount": 3,
+      "points": 45,
+      "label": "3 models",
+      "pricingConfidence": "verified"
+    },
+    {
+      "datasheetId": "ds-lattice-drone",
+      "modelCount": 1,
+      "points": 50,
+      "label": "1 model",
+      "pricingConfidence": "verified"
+    },
+    {
+      "datasheetId": "ds-seedpod-hauler",
+      "modelCount": 1,
+      "points": 85,
+      "label": "1 model",
+      "pricingConfidence": "verified"
+    },
+    {
+      "datasheetId": "ds-swiftwing-scout",
+      "modelCount": 3,
+      "points": 60,
+      "label": "3 models",
+      "pricingConfidence": "verified"
+    },
+    {
+      "datasheetId": "ds-thicket-matriarch",
+      "modelCount": 1,
+      "points": 95,
+      "label": "1 model",
+      "pricingConfidence": "verified"
+    },
+    {
+      "datasheetId": "ds-witherstalk-relic",
+      "modelCount": 1,
+      "points": 180,
+      "label": "1 model",
+      "pricingConfidence": "unverified"
+    }
+  ],
+  "datasheetCostTiers": [
+    {
+      "datasheetId": "ds-bramble-warden",
+      "modelCount": 5,
+      "copyIndexMin": 1,
+      "points": 70,
+      "label": "5 models",
+      "pricingConfidence": "verified"
+    },
+    {
+      "datasheetId": "ds-bramble-warden",
+      "modelCount": 5,
+      "copyIndexMin": 3,
+      "points": 65,
+      "label": "5 models, third copy onward",
+      "pricingConfidence": "verified"
+    },
+    {
+      "datasheetId": "ds-bramble-warden",
+      "modelCount": 10,
+      "copyIndexMin": 1,
+      "points": 140,
+      "label": "10 models",
+      "pricingConfidence": "verified"
+    },
+    {
+      "datasheetId": "ds-choir-echo",
+      "modelCount": 3,
+      "copyIndexMin": 1,
+      "points": 45,
+      "label": "3 models",
+      "pricingConfidence": "verified"
+    },
+    {
+      "datasheetId": "ds-lattice-drone",
+      "modelCount": 1,
+      "copyIndexMin": 1,
+      "points": 50,
+      "label": "1 model",
+      "pricingConfidence": "verified"
+    },
+    {
+      "datasheetId": "ds-seedpod-hauler",
+      "modelCount": 1,
+      "copyIndexMin": 1,
+      "points": 85,
+      "label": "1 model",
+      "pricingConfidence": "verified"
+    },
+    {
+      "datasheetId": "ds-swiftwing-scout",
+      "modelCount": 3,
+      "copyIndexMin": 1,
+      "points": 60,
+      "label": "3 models",
+      "pricingConfidence": "verified"
+    },
+    {
+      "datasheetId": "ds-thicket-matriarch",
+      "modelCount": 1,
+      "copyIndexMin": 1,
+      "points": 95,
+      "label": "1 model",
+      "pricingConfidence": "verified"
+    },
+    {
+      "datasheetId": "ds-witherstalk-relic",
+      "modelCount": 1,
+      "copyIndexMin": 1,
+      "points": 180,
+      "label": "1 model",
+      "pricingConfidence": "unverified"
+    }
+  ],
+  "datasheetWargearOptions": [
+    {
+      "id": "wg-bramble-thornlance",
+      "datasheetId": "ds-bramble-warden",
+      "groupKey": "melee",
+      "name": "Thornlance",
+      "pointsDelta": 5,
+      "maxPerUnit": 1,
+      "modelsPerInstance": 5
+    }
+  ],
+  "datasheetLeaderPairs": [
+    { "leaderDatasheetId": "ds-thicket-matriarch", "bodyguardDatasheetId": "ds-bramble-warden" }
+  ],
+  "datasheetDetachmentEligibility": []
+}
