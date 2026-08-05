@@ -4,6 +4,7 @@
 
 # build output
 dist/
+dist-test/
 .astro/
 
 # dependencies and the dev-only verified-bundle cache

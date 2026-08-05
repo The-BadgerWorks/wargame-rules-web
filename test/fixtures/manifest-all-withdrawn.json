@@ -10,8 +10,8 @@
       "schemaContractVersion": 1,
       "restrictionVocabularyVersion": 1,
       "fileUrl": "bundle-synth.json",
-      "sizeBytes": 18405,
-      "sha256": "f3acba70f1ee642cb46ab570a121922bef21e0a210b7d0c4429e9babe943eac7",
+      "sizeBytes": 19417,
+      "sha256": "1eda24d57ea3bc87b9c65ac287c5f087b753c8da822732938dedd3d60292fc0d",
       "withdrawn": true,
       "withdrawnReason": "Retired when the following release landed."
     },
@@ -23,8 +23,8 @@
       "schemaContractVersion": 1,
       "restrictionVocabularyVersion": 1,
       "fileUrl": "bundle-synth.json",
-      "sizeBytes": 18405,
-      "sha256": "f3acba70f1ee642cb46ab570a121922bef21e0a210b7d0c4429e9babe943eac7",
+      "sizeBytes": 19417,
+      "sha256": "1eda24d57ea3bc87b9c65ac287c5f087b753c8da822732938dedd3d60292fc0d",
       "withdrawn": true,
       "withdrawnReason": "The points table is under correction; treat every cost here as provisional."
     }

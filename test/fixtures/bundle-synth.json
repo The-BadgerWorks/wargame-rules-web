@@ -82,7 +82,24 @@
       "isLegends": true
     }
   ],
-  "detachmentRestrictions": [],
+  "detachmentRestrictions": [
+    {
+      "id": "dr-tangle-one-vehicle",
+      "editionId": "ed-synth-1",
+      "detachmentId": "d-tangle-vanguard",
+      "restrictionType": "max_units_with_keyword",
+      "paramsJson": "{\"keyword\":\"Vehicle\",\"max\":1}",
+      "messageTemplate": "This detachment may include at most one Vehicle unit."
+    },
+    {
+      "id": "dr-lattice-keyword",
+      "editionId": "ed-synth-1",
+      "detachmentId": "d-lattice-phalanx",
+      "restrictionType": "requires_keyword_in_army",
+      "paramsJson": "{\"keyword\":\"Iron Tessellate\"}",
+      "messageTemplate": "Every unit in this detachment must have the Iron Tessellate keyword."
+    }
+  ],
   "enhancements": [
     {
       "id": "e-bark-shield",
@@ -109,7 +126,23 @@
       "maxPerArmy": 1
     }
   ],
-  "enhancementEligibility": [],
+  "enhancementEligibility": [
+    {
+      "enhancementId": "e-bark-shield",
+      "ruleType": "requires_keyword",
+      "value": "Infantry"
+    },
+    {
+      "enhancementId": "e-lattice-core",
+      "ruleType": "datasheet_allowlist",
+      "value": "ds-lattice-drone"
+    },
+    {
+      "enhancementId": "e-lattice-core",
+      "ruleType": "forbids_keyword",
+      "value": "Vehicle"
+    }
+  ],
   "datasheets": [
     {
       "id": "ds-bramble-warden",
