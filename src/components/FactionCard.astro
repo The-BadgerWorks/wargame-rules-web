@@ -1,15 +1,16 @@
 ---
 // AI-Assisted: Claude Code (model: claude-opus-5) - One faction's entry on the faction index
 // (task T021; FR-003, US1 acceptance scenario 1).
-//
-// The parent-faction line is rendered here rather than by grouping the index into nested lists:
-// spec.md's Edge Cases require the parent relationship to be "visible, not merely implied by
-// grouping", and research D1 records that a sub-faction is a peer in the index and owns its own
-// detachments and units rather than being folded into its parent.
+// AI-Assisted note (model: claude-sonnet-5, PO review finding 2026-08-05): FactionCard is now
+// rendered only for a TOP-LEVEL faction (src/pages/index.astro maps over `topLevelFactions`). A
+// sub-faction no longer gets its own top-level card or a "parent faction" line here - instead its
+// parent's card lists it, nested, via SubFactionList. This still satisfies FR-003's completeness
+// requirement (every faction the bundle defines is reachable from the index and named on it) while
+// making the parent/child relationship the index's grouping rather than a peer note next to it.
 //
 // Every string is a bundle value or a chrome-strings key; there is no prose literal in this file.
-import strings from '../chrome-strings.json';
-import { factionHref, parentFactionOf, type Faction } from '../data/bundle.ts';
+import SubFactionList from './SubFactionList.astro';
+import { childFactionsOf, factionHref, type Faction } from '../data/bundle.ts';
 import { factionCode } from '../data/slugs.ts';
 
 interface Props {
@@ -17,18 +18,10 @@ interface Props {
 }
 
 const { faction } = Astro.props;
-const parent = parentFactionOf(faction);
+const children = childFactionsOf(faction);
 ---
 
 <li class="faction-card" data-faction={factionCode(faction.code)}>
   <a class="faction-card__name" href={factionHref(faction)}>{faction.name}</a>
-
-  {
-    parent && (
-      <p class="faction-card__parent" data-parent-faction={factionCode(parent.code)}>
-        <span class="meta-label">{strings.headings.parentFaction}</span>
-        <a href={factionHref(parent)}>{parent.name}</a>
-      </p>
-    )
-  }
+  <SubFactionList parent={faction} subFactions={children} variant="card" />
 </li>

@@ -86,6 +86,9 @@
     "forbids_keyword": "Cannot be taken by keyword",
     "datasheet_allowlist": "Restricted to datasheet"
   },
+  "subFactionLabelOverrides": {
+    "space-marines": "Chapters"
+  },
   "empty": {
     "detachments": "No detachments recorded.",
     "units": "No units recorded.",

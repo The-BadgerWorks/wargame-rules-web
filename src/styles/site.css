@@ -1,6 +1,9 @@
 /*
  * AI-Assisted: Claude Code (model: claude-opus-5) - The site's only stylesheet (task T016).
  *
+ * AI-Assisted note (model: claude-sonnet-5, PO review finding 2026-08-05): added the
+ * .sub-factions / .sub-faction-list rules below for the faction index/faction-page nesting change.
+ *
  * No CSS framework and no build step beyond Astro's own: this is a reference site whose per-page
  * payload is HTML plus this one file plus one small filter script. It uses system fonts so nothing
  * is fetched from a third party, and it carries no decorative imagery of any kind - FR-024 forbids
@@ -298,6 +301,30 @@ code,
   align-items: baseline;
   gap: 0.35rem 0.5rem;
   font-size: 0.875rem;
+}
+
+/* A faction's sub-factions (PO review 2026-08-05): nested inside its index card, or as a section
+ * above Detachments/Units on its own page. */
+.sub-faction-list {
+  list-style: none;
+  margin: 0.25rem 0 0;
+  padding: 0;
+}
+
+.sub-faction-list__item {
+  display: inline-block;
+  margin: 0 0.75rem 0.25rem 0;
+}
+
+.sub-factions--card {
+  margin: 0.35rem 0 0 1rem;
+  border-left: 2px solid var(--rule);
+  padding-left: 0.65rem;
+}
+
+.sub-factions--card .sub-faction-list__item {
+  display: block;
+  margin: 0 0 0.15rem;
 }
 
 .entity-list__item {

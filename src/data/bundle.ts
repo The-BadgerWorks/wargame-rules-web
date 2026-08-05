@@ -3,6 +3,9 @@
 // the bundle that entry names, refuse it unless BOTH its byte size and its sha256 match the
 // manifest, parse once, and export frozen lookup maps.
 //
+// AI-Assisted note (model: claude-sonnet-5, PO review finding 2026-08-05): added childFactionsOf
+// and topLevelFactions below, for the faction index/faction-page sub-faction nesting change.
+//
 // Two rules that are easy to get wrong and are therefore written down (research D4):
 //
 //   1. NEVER fetch in a component. Component frontmatter re-runs per page, so a fetch there would
@@ -428,6 +431,23 @@ export const factionsByCode: ReadonlyMap<string, Faction> = indexBy(factions, (f
 export function parentFactionOf(faction: Faction): Faction | undefined {
   return faction.parentFactionId ? factionsById.get(faction.parentFactionId) : undefined;
 }
+
+/**
+ * The factions whose `parentFactionId` is `faction.id`, in the same name order as `factions`.
+ * PO review finding (2026-08-05): a sub-faction still owns its own detachments and units (D1's
+ * divergence from `reference-db-schema.md` §3.5 is unchanged), but it is no longer listed as its
+ * own top-level entry on the faction index — it nests under this list on its parent's card and on
+ * the parent's own page instead. See src/data/sub-factions.ts for the group-heading label.
+ */
+export function childFactionsOf(faction: Faction): readonly Faction[] {
+  return factions.filter((f) => f.parentFactionId === faction.id);
+}
+
+/** Every faction with no parent. What the faction index renders one card per (PO review 2026-08-05,
+ *  above); a sub-faction reaches the index only nested under this list's matching entry. */
+export const topLevelFactions: readonly Faction[] = Object.freeze(
+  factions.filter((f) => !f.parentFactionId),
+);
 
 export const detachments: readonly Detachment[] = Object.freeze([...parsed.detachments].sort(byName));
 export const detachmentsById: ReadonlyMap<string, Detachment> = indexBy(detachments, (d) => d.id);

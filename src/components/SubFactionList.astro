@@ -1,0 +1,48 @@
+---
+// AI-Assisted: Claude Code (model: claude-sonnet-5) - The sub-faction group listing (PO review
+// finding, 2026-08-05): shared by the faction index card (FactionCard.astro, `variant="card"`)
+// and by a parent faction's own page (`variant="section"`), so the two places that group
+// sub-factions cannot drift into two different renderings of the same relationship.
+//
+// Renders nothing for a faction with no sub-factions - a leaf faction's page and card are
+// unaffected, exactly as an empty detachments/units section is omitted rather than shown empty
+// elsewhere on the site.
+//
+// The label is never a literal here: src/data/sub-factions.ts resolves it from chrome-strings.json
+// (the generic default, or an override keyed on the parent's own faction code).
+import { factionHref, type Faction } from '../data/bundle.ts';
+import { subFactionsLabelFor } from '../data/sub-factions.ts';
+import { factionCode } from '../data/slugs.ts';
+
+interface Props {
+  parent: Faction;
+  subFactions: readonly Faction[];
+  /** 'section' matches the <h2> sibling sections on a faction's own page; 'card' is the compact
+   *  meta-label treatment used inside a faction index card. */
+  variant?: 'section' | 'card';
+}
+
+const { parent, subFactions, variant = 'section' } = Astro.props;
+const label = subFactionsLabelFor(parent);
+const Heading = variant === 'section' ? 'h2' : 'p';
+---
+
+{
+  subFactions.length > 0 && (
+    <div
+      class={`sub-factions sub-factions--${variant}`}
+      data-sub-factions
+      data-sub-factions-parent={factionCode(parent.code)}
+      data-sub-factions-label={label}
+    >
+      <Heading class={variant === 'card' ? 'meta-label' : undefined}>{label}</Heading>
+      <ul class="sub-faction-list">
+        {subFactions.map((child) => (
+          <li class="sub-faction-list__item" data-faction={factionCode(child.code)}>
+            <a href={factionHref(child)}>{child.name}</a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
+}

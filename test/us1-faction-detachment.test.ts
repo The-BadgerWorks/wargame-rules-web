@@ -2,6 +2,10 @@
 // written before src/pages/index.astro, src/pages/factions/[faction]/index.astro and
 // src/pages/factions/[faction]/detachments/[detachment].astro exist, and confirmed failing first.
 //
+// AI-Assisted note (model: claude-sonnet-5, PO review finding 2026-08-05): rewrote the "parent
+// faction" index assertion into a sub-faction-nesting assertion, and added the faction-page
+// sub-factions-section coverage, for the Space Marines "Chapters" grouping change.
+//
 // Evidence for FR-003, FR-004, FR-005, FR-006, spec US1 acceptance scenarios 1-5, and the Edge
 // Cases for an empty faction and for a sub-faction.
 //
@@ -39,17 +43,36 @@ describe('Faction index (FR-003, US1 scenario 1)', () => {
     }
   });
 
-  it('shows the parent faction for a sub-faction, and only for a sub-faction', async () => {
+  // PO review finding (2026-08-05): a sub-faction is no longer a top-level entry on the index - it
+  // nests under its parent's card instead, under a group heading whose label chrome-strings.json
+  // supplies (the generic default here, since the fixture's parent faction code carries no
+  // override; the live "space-marines" override to "Chapters" is a separate concern of
+  // src/data/sub-factions.ts, not of this synthetic fixture).
+  it('nests a sub-faction under its parent card instead of listing it at the top level', async () => {
     const html = await page(FACTION_INDEX);
-    const listed = rows(html, 'faction');
 
-    // Verdant Outriders is the fixture's only sub-faction; its parent is Verdant Concord.
-    const sub = listed.get('verdant-outriders')!;
-    expect(sub).toContain('data-parent-faction="verdant-concord"');
-    expect(text(sub)).toContain('Verdant Concord');
-    expect(text(sub)).toContain(strings.headings.parentFaction);
+    // Only a faction with no parent gets its own top-level card.
+    const topLevelCards = [...html.matchAll(/<li class="faction-card" data-faction="([^"]+)"/g)].map(
+      (m) => m[1],
+    );
+    const expectedTopLevel = bundle.factions
+      .filter((f) => !('parentFactionId' in f))
+      .map((f) => f.code)
+      .sort();
+    expect(topLevelCards.sort()).toEqual(expectedTopLevel);
+    expect(topLevelCards).not.toContain('verdant-outriders');
 
-    expect(attrValues(html, 'parent-faction')).toEqual(['verdant-concord']);
+    // Verdant Outriders (the fixture's only sub-faction) is nested inside Verdant Concord's
+    // sub-factions group, under the chrome-strings label, still linking to its own page.
+    const groups = rows(html, 'sub-factions-parent');
+    const group = groups.get('verdant-concord')!;
+    expect(group).toContain('data-faction="verdant-outriders"');
+    expect(text(group)).toContain(strings.headings.subFactions);
+    expect(linkTexts(html, VERDANT_OUTRIDERS)).toContain('Verdant Outriders');
+
+    // No sub-factions group renders for a faction with no children.
+    expect(groups.has('hollow-choir')).toBe(false);
+    expect(groups.has('iron-tessellate')).toBe(false);
   });
 
   it('generated a page for every faction it links to', async () => {
@@ -100,6 +123,32 @@ describe('Faction page (FR-004, US1 scenario 2)', () => {
   it('includes a Legends unit in the list rather than hiding it (Edge Cases)', async () => {
     const html = await page(VERDANT_CONCORD);
     expect(attrValues(html, 'unit')).toContain('witherstalk-relic');
+  });
+
+  it(
+    "lists its sub-factions above its detachments and units, under the chrome-strings label " +
+      '(PO review finding, 2026-08-05)',
+    async () => {
+      const html = await page(VERDANT_CONCORD);
+
+      expect(html).toContain('data-sub-factions');
+      expect(html).toContain('data-sub-factions-parent="verdant-concord"');
+      expect(linkTexts(html, VERDANT_OUTRIDERS)).toContain('Verdant Outriders');
+      expect(text(html)).toContain(strings.headings.subFactions);
+
+      // The section renders before Detachments and Units, not after.
+      const subFactionsAt = html.indexOf('data-sub-factions-parent="verdant-concord"');
+      const detachmentsAt = html.indexOf(strings.headings.detachments);
+      const unitsAt = html.indexOf(strings.headings.units);
+      expect(subFactionsAt).toBeGreaterThan(-1);
+      expect(subFactionsAt).toBeLessThan(detachmentsAt);
+      expect(subFactionsAt).toBeLessThan(unitsAt);
+    },
+  );
+
+  it('renders no sub-factions section for a faction with no children', async () => {
+    const html = await page(IRON_TESSELLATE);
+    expect(html).not.toContain('data-sub-factions');
   });
 
   it("shows a sub-faction's own detachments and units only, plus a link to its parent", async () => {

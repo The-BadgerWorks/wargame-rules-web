@@ -11,11 +11,19 @@
 //
 // A faction with no detachments, or none of its units yet curated, says so. Rendering an empty list
 // under a heading reads as a broken page rather than as accurate data.
+//
+// AI-Assisted note (model: claude-sonnet-5, PO review finding 2026-08-05): a faction that HAS
+// sub-factions now lists them, above Detachments/Units, via the same SubFactionList component the
+// index card uses - so the two places that group a faction's children cannot disagree. A leaf
+// faction (no children) renders no such section, the same way it renders no empty detachments/units
+// section elsewhere on this page.
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import FlagBadges from '../../../components/FlagBadges.astro';
+import SubFactionList from '../../../components/SubFactionList.astro';
 import UnitFilter from '../../../components/UnitFilter.astro';
 import strings from '../../../chrome-strings.json';
 import {
+  childFactionsOf,
   detachmentHref,
   detachmentSlugById,
   detachmentsByFaction,
@@ -44,6 +52,7 @@ interface Props {
 const { faction } = Astro.props;
 
 const parent = parentFactionOf(faction);
+const children = childFactionsOf(faction);
 const ownDetachments = detachmentsByFaction.get(faction.id) ?? [];
 const ownUnits = unitsByFaction.get(faction.id) ?? [];
 ---
@@ -63,6 +72,8 @@ const ownUnits = unitsByFaction.get(faction.id) ?? [];
       </p>
     )
   }
+
+  <SubFactionList parent={faction} subFactions={children} variant="section" />
 
   <h2>{strings.headings.detachments}</h2>
   {
