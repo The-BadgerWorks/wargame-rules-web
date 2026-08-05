@@ -35,7 +35,8 @@ Review date: the first release-cycle review after launch.
 | Build variables | none required |
 | Build secrets | none — **no Cloudflare API token exists in GitHub for this project** |
 
-`npm run build` expands to `astro check && astro build && node scripts/verify-dist.mjs`. Because the
+`npm run build` expands to `astro check && astro build && node scripts/build-info.mjs && node
+scripts/verify-dist.mjs`. Because the
 verification script is part of the build command rather than a separate stage, a failing check means
 the deploy command never runs, no version is created, and the previous deployment keeps serving.
 That is the entire rollback mechanism for a failed build; nothing is required of an operator.
@@ -57,6 +58,20 @@ Semantics, the exact producer step, and the non-interference guarantees are froz
 **Rotation**: delete the hook, recreate it against `main`, then update **both** secrets. A stale URL
 fails silently by design, so rotation is safe under pressure but must be paired with the manifest
 watch, which is what makes the resulting staleness visible.
+
+### The manifest watch's own settings
+
+`.github/workflows/manifest-watch.yml` runs every 6 hours and on `workflow_dispatch`, and needs one
+repository **variable** besides the secret above:
+
+| Name | Kind | Declared value |
+|---|---|---|
+| `WGC_WEB_SITE_URL` | repository variable | the deployed base URL, e.g. `https://<worker>.workers.dev` |
+
+Until it is set the watch warns and exits successfully, because the public hostname is still
+undecided (research *Open items* #3) and a guessed one would report a permanent, meaningless
+divergence. **Setting this variable is what turns the watch on**; the site is unmonitored without
+it. The same value is also the build-time `WGC_WEB_SITE_URL` that produces canonical URLs.
 
 ## 3. Preview URLs
 
@@ -94,7 +109,7 @@ reviewer-approved publish. Do not add an approval step to the deploy-hook path.
 
 | Assumption | Why it is recorded here |
 |---|---|
-| Node 22 or newer on the build image | Astro 7 requires it; `package.json` declares `engines.node >= 22` |
+| Node 22.18 or newer on the build image | Astro 7 requires Node 22; 22.18 is where node strips TypeScript types on import without a flag, which is how `scripts/build-info.mjs` and `scripts/verify-dist.mjs` read `src/data/bundle.ts` instead of re-deriving the rules version and the route set. `package.json` declares `engines.node >= 22.18` |
 | `WORKERS_CI_BRANCH` is set by Workers Builds to the branch being built | `src/config.ts` compares it against `main` to decide whether this is a production build, which is how the `WGC_WEB_CHANNEL === 'published'` assertion (FR-002) and the `noindex` on preview builds are decided. `WGC_WEB_BRANCH` overrides it if the variable is ever renamed upstream |
 | `WORKERS_CI_COMMIT_SHA` is set by Workers Builds | recorded into `dist/build-info.json` as `builtFromCommit` for the rebuild-notification contract; falls back to `git rev-parse HEAD` |
 

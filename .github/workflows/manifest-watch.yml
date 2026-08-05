@@ -1,0 +1,55 @@
+# AI-Assisted: Claude Code (model: claude-opus-5) - The fallback rebuild watch's schedule
+# (task T046; contracts/rebuild-notification.md §4).
+#
+# What this exists to catch is the failure the hook cannot report on. Contract §1.2 requires a
+# failed, refused, timed-out or unconfigured notification to be inert on the publishing side, so
+# `wargame-rules-data` completes a publish or a withdrawal believing all is well whether the site
+# rebuilt or not. This job is the only thing that ever checks.
+#
+# It bounds the worst case at one cron interval plus a build, and makes no SC-005 claim: SC-005 is
+# carried by the hook path. This is the safety net, not the schedule.
+#
+# On the cron expression: `contracts/rebuild-notification.md` §4 names `WGC_WEB_WATCH_CRON` as the
+# knob for the interval. GitHub Actions does not evaluate expressions in `on.schedule.cron`, so the
+# contract's default - every 6 hours - is written literally here and changing it is a one-line
+# configuration change to this file rather than a variable edit. Recorded so the divergence from
+# the contract's wording is deliberate and visible, not an oversight.
+name: Manifest watch
+
+on:
+  schedule:
+    # Every 6 hours, offset off the hour so it does not contend with the top-of-hour scheduling peak.
+    - cron: '17 */6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: manifest-watch
+  cancel-in-progress: false
+
+jobs:
+  watch:
+    name: live site vs published manifest
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      # The watch imports two source modules and fetches two documents; it needs no dependency
+      # installed to do either, so nothing is installed. A watch that can be broken by a dependency
+      # resolution failure is a watch that reports the wrong outage.
+      - name: Compare the deployed version against the published manifest
+        env:
+          # The deployed base URL. Unset is a documented no-op with a warning: the public hostname
+          # is still undecided (research "Open items" #3).
+          WGC_WEB_SITE_URL: ${{ vars.WGC_WEB_SITE_URL }}
+          # The same Cloudflare deploy hook `wargame-rules-data` holds as WGC_REBUILD_HOOK_URL.
+          # The URL is the credential (contract §2); the script never logs it.
+          CF_DEPLOY_HOOK_URL: ${{ secrets.CF_DEPLOY_HOOK_URL }}
+        run: node scripts/manifest-watch.mjs
