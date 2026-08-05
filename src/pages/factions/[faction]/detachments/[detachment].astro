@@ -1,0 +1,102 @@
+---
+// AI-Assisted: Claude Code (model: claude-opus-5) - One page per detachment (task T024; FR-005,
+// FR-006, US1 acceptance scenarios 3, 4 and 5).
+//
+// FR-005's sharpest clause is that a restriction is shown "using its authored player-facing message
+// rather than its internal rule type or parameters". So this page renders `messageTemplate` and
+// NOTHING else from the restriction row - not `restrictionType`, not `paramsJson`. Those two fields
+// are an internal vocabulary that 001's rules engine consumes; putting either in front of a reader
+// would be the defect, not a debugging aid.
+//
+// Today's published bundle carries ZERO detachmentRestrictions rows (research §0), so the
+// "no restrictions recorded" branch below is the ordinary case at launch rather than a fallback,
+// and is written to read as a statement about the data.
+//
+// Restrictions with no `detachmentId` apply edition-wide and are deliberately NOT rendered here:
+// FR-005 scopes this page to "every restriction attached to it", and src/data/bundle.ts exports
+// those separately for whichever page later claims them.
+import BaseLayout from '../../../../layouts/BaseLayout.astro';
+import EnhancementList from '../../../../components/EnhancementList.astro';
+import strings from '../../../../chrome-strings.json';
+import {
+  detachmentSlugById,
+  detachments,
+  enhancementsByDetachment,
+  factionHref,
+  factionsById,
+  restrictionsByDetachment,
+  type Detachment,
+  type Faction,
+} from '../../../../data/bundle.ts';
+import { factionCode } from '../../../../data/slugs.ts';
+
+export function getStaticPaths() {
+  return detachments.map((detachment) => {
+    const faction = factionsById.get(detachment.factionId);
+    if (!faction) {
+      throw new Error(
+        `Detachment "${detachment.id}" references faction "${detachment.factionId}", ` +
+          `which the bundle does not define.`,
+      );
+    }
+    return {
+      params: {
+        faction: factionCode(faction.code),
+        detachment: detachmentSlugById.get(detachment.id)!,
+      },
+      props: { detachment, faction },
+    };
+  });
+}
+
+interface Props {
+  detachment: Detachment;
+  faction: Faction;
+}
+
+const { detachment, faction } = Astro.props;
+
+const restrictions = restrictionsByDetachment.get(detachment.id) ?? [];
+const enhancements = enhancementsByDetachment.get(detachment.id) ?? [];
+---
+
+<BaseLayout title={detachment.name}>
+  <nav class="breadcrumb" aria-label={strings.nav.breadcrumb}>
+    <a href="/">{strings.nav.home}</a>
+    <a href={factionHref(faction)}>{faction.name}</a>
+  </nav>
+
+  <h1>{detachment.name}</h1>
+
+  <p class="entity-meta">
+    <span class="meta-label">{strings.labels.detachmentPointsCost}</span>
+    <span class="mono" data-detachment-points={detachment.detachmentPointsCost}>
+      {detachment.detachmentPointsCost}
+    </span>
+    {
+      detachment.isLegends && (
+        <span class="flag" data-flag="legends">
+          {strings.flags.legends}
+        </span>
+      )
+    }
+  </p>
+
+  <h2>{strings.headings.restrictions}</h2>
+  {
+    restrictions.length === 0 ? (
+      <p class="empty-state" data-empty="restrictions">
+        {strings.empty.restrictions}
+      </p>
+    ) : (
+      <ul class="restriction-list">
+        {restrictions.map((restriction) => (
+          <li data-restriction={restriction.id}>{restriction.messageTemplate}</li>
+        ))}
+      </ul>
+    )
+  }
+
+  <h2>{strings.headings.enhancements}</h2>
+  <EnhancementList enhancements={enhancements} />
+</BaseLayout>

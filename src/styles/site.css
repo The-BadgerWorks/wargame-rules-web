@@ -206,6 +206,143 @@ code,
   font-family: var(--font-mono);
 }
 
+.lede {
+  color: var(--ink-muted);
+  margin-top: -0.25rem;
+}
+
+.meta-label {
+  color: var(--ink-muted);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.breadcrumb {
+  font-size: 0.875rem;
+  margin-bottom: 0.75rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.75rem;
+}
+
+.entity-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.35rem 0.75rem;
+}
+
+/* --------------------------------------------------------------------------
+ * Listings: the faction index, and a faction's detachments and units
+ * -------------------------------------------------------------------------- */
+
+.faction-list,
+.entity-list,
+.enhancement-list,
+.restriction-list,
+.eligibility-list,
+.ability-list,
+.keyword-list,
+.leads-list {
+  list-style: none;
+  margin: 0.5rem 0 0;
+  padding: 0;
+}
+
+.faction-card {
+  border-bottom: 1px solid var(--rule);
+  padding: 0.5rem 0;
+}
+
+.faction-card__name {
+  font-weight: 600;
+}
+
+.faction-card__parent,
+.parent-faction {
+  margin: 0.15rem 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.35rem 0.5rem;
+  font-size: 0.875rem;
+}
+
+.entity-list__item {
+  border-bottom: 1px solid var(--rule);
+  padding: 0.4rem 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.35rem 0.5rem;
+}
+
+/* --------------------------------------------------------------------------
+ * Detachment page: restrictions and enhancements
+ * -------------------------------------------------------------------------- */
+
+.restriction-list li {
+  border-bottom: 1px solid var(--rule);
+  padding: 0.4rem 0;
+}
+
+.enhancement {
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  background: var(--panel);
+  padding: 0.6rem 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.enhancement__name {
+  margin: 0;
+  font-weight: 600;
+}
+
+.enhancement__meta,
+.eligibility-list li {
+  margin: 0.2rem 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.35rem 0.75rem;
+  font-size: 0.9375rem;
+}
+
+.enhancement .empty-state {
+  margin: 0.2rem 0 0;
+  font-size: 0.875rem;
+}
+
+/* --------------------------------------------------------------------------
+ * Category flags (FR-015)
+ * -------------------------------------------------------------------------- */
+
+.flag {
+  display: inline-block;
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  padding: 0.05rem 0.5rem;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ink-muted);
+  white-space: nowrap;
+}
+
+.flag[data-flag='legends'] {
+  border-color: var(--warn-rule);
+  color: var(--warn-ink);
+  background: var(--warn-paper);
+}
+
+.flag-badges {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
 /* --------------------------------------------------------------------------
  * Footer and the FR-023 disclaimer
  * -------------------------------------------------------------------------- */

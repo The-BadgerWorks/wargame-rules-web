@@ -83,7 +83,16 @@ describe('Faction page (FR-004, US1 scenario 2)', () => {
       'Witherstalk Relic',
     );
 
-    for (const href of new Set(hrefs(html).filter((h) => h.startsWith('/factions/')))) {
+    // US1 owns the faction and detachment pages, so their links are checked to resolve here. The
+    // unit pages are User Story 2's deliverable (FR-007), so this story asserts only that the unit
+    // links it renders address the routes D1 defines; test/us2-unit-datacard.test.ts asserts those
+    // pages exist. That split is what keeps the two stories independently testable.
+    const links = new Set(hrefs(html).filter((h) => h.startsWith('/factions/')));
+    for (const href of links) {
+      if (href.includes('/units/')) {
+        expect(href).toMatch(/^\/factions\/[a-z0-9-]+\/units\/[a-z0-9-]+\/$/);
+        continue;
+      }
       expect(await pageExists(href), `no page generated for ${href}`).toBe(true);
     }
   });

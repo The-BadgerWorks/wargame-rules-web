@@ -1,0 +1,24 @@
+---
+// AI-Assisted: Claude Code (model: claude-opus-5) - The faction index, the site's entry point
+// (task T021; FR-003, US1 acceptance scenario 1).
+//
+// It lists EVERY faction the current bundle defines, sub-factions included and as peers, because
+// FR-003 is a completeness requirement rather than a curation one: a faction the bundle carries but
+// the index omits is unreachable, and research D1's two-click argument for SC-002 starts here.
+//
+// The list is already sorted by name at module scope in src/data/bundle.ts, so no ordering decision
+// is taken per page.
+import BaseLayout from '../layouts/BaseLayout.astro';
+import FactionCard from '../components/FactionCard.astro';
+import strings from '../chrome-strings.json';
+import { factions } from '../data/bundle.ts';
+---
+
+<BaseLayout title={strings.site.name}>
+  <h1>{strings.headings.factions}</h1>
+  <p class="lede">{strings.site.tagline}</p>
+
+  <ul class="faction-list">
+    {factions.map((faction) => <FactionCard faction={faction} />)}
+  </ul>
+</BaseLayout>

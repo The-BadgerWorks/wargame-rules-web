@@ -1,0 +1,85 @@
+---
+// AI-Assisted: Claude Code (model: claude-opus-5) - The enhancements a detachment grants
+// (task T022; FR-006, US1 acceptance scenarios 4 and 5).
+//
+// Two branches matter here and neither is a fallback:
+//
+//   * a detachment that grants no enhancements says so (scenario 5) rather than rendering an
+//     empty <ul> under a heading, which reads as a rendering fault rather than as data;
+//   * an enhancement with no eligibility rule says so too. `enhancementEligibility` is EMPTY in
+//     today's published bundle (research §0), so at launch this is what every enhancement shows,
+//     and stating it plainly is the difference between "the data records none" and "the site
+//     forgot to render them".
+//
+// A `datasheet_allowlist` rule stores a datasheet id. It is resolved to that datasheet's name
+// before rendering: an internal identifier on a player-facing page is the same defect FR-005
+// forbids for restriction types.
+import strings from '../chrome-strings.json';
+import {
+  datasheetsById,
+  enhancementEligibilityByEnhancement,
+  type Enhancement,
+  type EnhancementEligibility,
+} from '../data/bundle.ts';
+
+interface Props {
+  enhancements: readonly Enhancement[];
+}
+
+const { enhancements } = Astro.props;
+
+function eligibilityLabel(rule: EnhancementEligibility): string {
+  return strings.eligibilityTypes[rule.ruleType];
+}
+
+function eligibilityValue(rule: EnhancementEligibility): string {
+  if (rule.ruleType !== 'datasheet_allowlist') return rule.value;
+  return datasheetsById.get(rule.value)?.name ?? rule.value;
+}
+---
+
+{
+  enhancements.length === 0 ? (
+    <p class="empty-state" data-empty="enhancements">
+      {strings.empty.enhancements}
+    </p>
+  ) : (
+    <ul class="enhancement-list">
+      {enhancements.map((enhancement) => {
+        const eligibility = enhancementEligibilityByEnhancement.get(enhancement.id) ?? [];
+
+        return (
+          <li class="enhancement" data-enhancement={enhancement.id}>
+            <p class="enhancement__name">{enhancement.name}</p>
+
+            <p class="enhancement__meta">
+              <span class="meta-label">{strings.labels.points}</span>
+              <span class="mono" data-enhancement-points={enhancement.points}>
+                {enhancement.points}
+              </span>
+              <span class="meta-label">{strings.labels.maxPerArmy}</span>
+              <span class="mono" data-enhancement-max={enhancement.maxPerArmy}>
+                {enhancement.maxPerArmy}
+              </span>
+            </p>
+
+            {eligibility.length === 0 ? (
+              <p class="empty-state" data-empty="eligibility">
+                {strings.empty.eligibility}
+              </p>
+            ) : (
+              <ul class="eligibility-list">
+                {eligibility.map((rule) => (
+                  <li data-eligibility={rule.ruleType}>
+                    <span class="meta-label">{eligibilityLabel(rule)}</span>
+                    <span>{eligibilityValue(rule)}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </li>
+        );
+      })}
+    </ul>
+  )
+}

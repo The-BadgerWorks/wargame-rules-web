@@ -1,0 +1,97 @@
+---
+// AI-Assisted: Claude Code (model: claude-opus-5) - One page per faction (task T023; FR-004,
+// US1 acceptance scenario 2, and the Edge Cases for an empty faction and for a sub-faction).
+//
+// The rule this page exists to get right is research D1's *Sub-factions* paragraph: a faction page
+// lists ITS OWN detachments and units and nothing else, and shows its parent as a link. That is a
+// deliberate divergence from reference-db-schema.md §3.5, whose "own plus every ancestor's" rule
+// exists for army legality in 001. This site is a reference browser, not a legality engine, and
+// spec.md's Edge Cases are explicit that a sub-faction page "still shows its own detachments and
+// units". Absorbing a parent's units here would silently double-count them across two pages.
+//
+// A faction with no detachments, or none of its units yet curated, says so. Rendering an empty list
+// under a heading reads as a broken page rather than as accurate data.
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import strings from '../../../chrome-strings.json';
+import {
+  detachmentHref,
+  detachmentSlugById,
+  detachmentsByFaction,
+  factionHref,
+  factions,
+  parentFactionOf,
+  unitHref,
+  unitSlugById,
+  unitsByFaction,
+  type Faction,
+} from '../../../data/bundle.ts';
+import { factionCode } from '../../../data/slugs.ts';
+
+export function getStaticPaths() {
+  return factions.map((faction) => ({
+    params: { faction: factionCode(faction.code) },
+    props: { faction },
+  }));
+}
+
+interface Props {
+  faction: Faction;
+}
+
+const { faction } = Astro.props;
+
+const parent = parentFactionOf(faction);
+const ownDetachments = detachmentsByFaction.get(faction.id) ?? [];
+const ownUnits = unitsByFaction.get(faction.id) ?? [];
+---
+
+<BaseLayout title={faction.name}>
+  <nav class="breadcrumb" aria-label={strings.nav.breadcrumb}>
+    <a href="/">{strings.nav.home}</a>
+  </nav>
+
+  <h1>{faction.name}</h1>
+
+  {
+    parent && (
+      <p class="parent-faction" data-parent-faction={factionCode(parent.code)}>
+        <span class="meta-label">{strings.headings.parentFaction}</span>
+        <a href={factionHref(parent)}>{parent.name}</a>
+      </p>
+    )
+  }
+
+  <h2>{strings.headings.detachments}</h2>
+  {
+    ownDetachments.length === 0 ? (
+      <p class="empty-state" data-empty="detachments">
+        {strings.empty.detachments}
+      </p>
+    ) : (
+      <ul class="entity-list">
+        {ownDetachments.map((detachment) => (
+          <li class="entity-list__item" data-detachment={detachmentSlugById.get(detachment.id)}>
+            <a href={detachmentHref(detachment)}>{detachment.name}</a>
+          </li>
+        ))}
+      </ul>
+    )
+  }
+
+  <h2>{strings.headings.units}</h2>
+  {
+    ownUnits.length === 0 ? (
+      <p class="empty-state" data-empty="units">
+        {strings.empty.units}
+      </p>
+    ) : (
+      <ul class="entity-list">
+        {ownUnits.map((unit) => (
+          <li class="entity-list__item" data-unit={unitSlugById.get(unit.id)}>
+            <a href={unitHref(unit)}>{unit.name}</a>
+          </li>
+        ))}
+      </ul>
+    )
+  }
+</BaseLayout>
