@@ -1,0 +1,19 @@
+{
+  "manifestVersion": 1,
+  "generatedAt": "2026-01-20T09:00:00Z",
+  "versions": [
+    {
+      "rulesVersionId": "synth-2026-01-enriched",
+      "displayName": "Synthetic Rules 2026.01 (enriched)",
+      "publishedAt": "2026-01-20T00:00:00Z",
+      "editionCodes": ["synth-1e"],
+      "schemaContractVersion": 1,
+      "restrictionVocabularyVersion": 1,
+      "fileUrl": "bundle-synth-enriched.json",
+      "sizeBytes": 24313,
+      "sha256": "d9f665887076c8c7a73dc15c8c58a53e80ecdcb6d5846908b3b92f054abd2dbe",
+      "withdrawn": false,
+      "withdrawnReason": null
+    }
+  ]
+}

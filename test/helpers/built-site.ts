@@ -12,6 +12,11 @@
 //
 // `setup` is wired as Vitest's `globalSetup` (vitest.config.ts), so the build happens exactly once
 // before any test file runs, rather than once per worker.
+//
+// AI-Assisted note (model: claude-sonnet-5, 005-rules-web-enrichment-display task T003): added a
+// third build, `enriched`, from `bundle-synth-enriched.json` — the 004-enrichment-carrying fixture
+// every US1-US4 page test asserts against. `current`/`withdrawn` are unchanged and continue to
+// prove the pre-004 case for free, since neither fixture carries any of the new bundle arrays.
 import { execFile } from 'node:child_process';
 import { readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
@@ -23,24 +28,30 @@ const execFileAsync = promisify(execFile);
 export const REPO_ROOT = fileURLToPath(new URL('../../', import.meta.url));
 
 /**
- * Two builds, both kept out of `dist/` so a test build can never be mistaken for, or deployed as, a
+ * Three builds, all kept out of `dist/` so a test build can never be mistaken for, or deployed as, a
  * real build:
  *
- *   current    the non-withdrawn fixture — what every page test asserts against
+ *   current    the non-withdrawn fixture — what every pre-004 page test asserts against
  *   withdrawn  the all-entries-withdrawn fixture — SC-004's other half
+ *   enriched   the 004-enrichment-carrying fixture — what US1-US4 page tests assert against
+ *              (specs/005-rules-web-enrichment-display)
  *
  * The second build exists because SC-004 is a claim about 100% and 0% of pages in the two states,
- * and only a real build of each state can be counted. Both are cheap: the synthetic bundle renders
- * 17 pages.
+ * and only a real build of each state can be counted. The third exists for the same reason, one
+ * feature later: a claim about how a page renders WITH composition, wargear options, army rules,
+ * detachment rules, or glossary entries can only be proven against a build that actually has them.
+ * All three are cheap: each synthetic bundle renders 17 pages.
  */
 export const OUT_DIR = 'dist-test/current';
 export const OUT_DIR_WITHDRAWN = 'dist-test/withdrawn';
+export const OUT_DIR_ENRICHED = 'dist-test/enriched';
 
 const ASTRO_BIN = path.join(REPO_ROOT, 'node_modules', 'astro', 'bin', 'astro.mjs');
 const BUILD_INFO_SCRIPT = path.join(REPO_ROOT, 'scripts', 'build-info.mjs');
 
 const FIXTURE_MANIFEST = './test/fixtures/manifest-current.json';
 const FIXTURE_MANIFEST_WITHDRAWN = './test/fixtures/manifest-all-withdrawn.json';
+const FIXTURE_MANIFEST_ENRICHED = './test/fixtures/manifest-enriched.json';
 
 async function build(outDir: string, manifest: string): Promise<void> {
   const env = {
@@ -60,6 +71,7 @@ async function build(outDir: string, manifest: string): Promise<void> {
 export async function setup(): Promise<void> {
   await build(OUT_DIR, FIXTURE_MANIFEST);
   await build(OUT_DIR_WITHDRAWN, FIXTURE_MANIFEST_WITHDRAWN);
+  await build(OUT_DIR_ENRICHED, FIXTURE_MANIFEST_ENRICHED);
 }
 
 function fileFor(route: string, outDir: string = OUT_DIR): string {

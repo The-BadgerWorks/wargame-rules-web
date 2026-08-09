@@ -6,6 +6,13 @@
 // AI-Assisted note (model: claude-sonnet-5, PO review finding 2026-08-05): added childFactionsOf
 // and topLevelFactions below, for the faction index/faction-page sub-faction nesting change.
 //
+// AI-Assisted note (model: claude-sonnet-5, 005-rules-web-enrichment-display tasks T004/T005):
+// added the six 004-enrichment arrays (composition, wargear option groups/choices, faction rules,
+// detachment rules, keyword glossary) as optional Bundle fields, plus their grouped indexes, so the
+// reference site can display them. The "Bundle shape" reference note below still cites
+// reference-db-schema.md v1.2.0; bringing it to v1.4.0 / bundle-schema-delta.md v1.1.0 is tracked
+// separately (tasks.md T032) rather than folded in here.
+//
 // Two rules that are easy to get wrong and are therefore written down (research D4):
 //
 //   1. NEVER fetch in a component. Component frontmatter re-runs per page, so a fetch there would
@@ -188,6 +195,92 @@ export interface DatasheetLeaderPair {
   bodyguardDatasheetId: string;
 }
 
+// ---------------------------------------------------------------------------
+// AI-Assisted: Claude Code (model: claude-sonnet-5, 005-rules-web-enrichment-display tasks
+// T004/T005) - The six 004-enrichment arrays this feature displays, added additively per
+// bundle-schema-delta.md v1.1.0 §2.1-2.3 and §2.5-2.7. Every array below is OPTIONAL on `Bundle`:
+// a pre-004 bundle simply omits the field, `?? []` at every read site treats that as "no data", and
+// every page degrades to today's rendering with no special-case branch (spec.md FR-002/FR-003).
+// This file mirrors those contract shapes; it does not redefine them.
+// ---------------------------------------------------------------------------
+
+/** One model line of one datasheet's published composition (bundle-schema-delta §2.1). */
+export interface DatasheetComposition {
+  datasheetId: string;
+  line: number;
+  modelName: string;
+  minCount: number;
+  maxCount: number;
+  /** FK to DatasheetModel.line; omitted when the source link is not unambiguous. */
+  modelLine?: number;
+}
+
+export type WargearOptionGroupScope = 'unit' | 'model' | 'per_n_models';
+
+/** A set of mutually related wargear choices a datasheet picks from (bundle-schema-delta §2.2). */
+export interface DatasheetOptionGroup {
+  id: string;
+  datasheetId: string;
+  line: number;
+  scope: WargearOptionGroupScope;
+  /** Present only when scope = 'per_n_models'. */
+  scopeN?: number;
+  parentGroupId?: string;
+  defaultChoiceId?: string;
+  minChoices?: number;
+  maxChoices?: number;
+}
+
+/**
+ * One selectable option within a group (bundle-schema-delta §2.3). `pointsDelta` is OMITTED —
+ * never `0` — when the points source does not price the choice (Guarantee 10); a template MUST
+ * treat its absence as "no cost figure", never as free.
+ */
+export interface DatasheetOptionChoice {
+  id: string;
+  groupId: string;
+  name: string;
+  count?: number;
+  grantsWeaponLine?: number;
+  replacesWeaponLine?: number;
+  isDefault: boolean;
+  /** An explicit "no change" alternative. MUST NOT be rendered as a free item. */
+  isNoChange: boolean;
+  pointsDelta?: number;
+  /** FK to DatasheetWargearOption.id; omitted when the choice is unpriced. */
+  pricedOptionId?: string;
+}
+
+/** One army-wide rule of one faction (bundle-schema-delta §2.5). A faction may have more than one. */
+export interface FactionRule {
+  id: string;
+  factionId: string;
+  name: string;
+  displayOrder: number;
+  /** Authored, mechanics-only. Omitted while unauthored — the name is always carried. */
+  summary?: string;
+}
+
+/** One detachment's rule (bundle-schema-delta §2.6). A detachment may own more than one. */
+export interface DetachmentRule {
+  id: string;
+  detachmentId: string;
+  name: string;
+  summary?: string;
+}
+
+/**
+ * One authored, mechanics-only keyword definition, keyed by the normalised `keywordKey`
+ * (bundle-schema-delta §2.7, §4). Serves every datasheet and weapon profile using that keyword,
+ * including every numeric-parameter variant of it. An entry exists only when authored.
+ */
+export interface KeywordGlossaryEntry {
+  keywordKey: string;
+  displayKeyword: string;
+  hasNumericParameter: boolean;
+  summary: string;
+}
+
 export interface SnapshotMeta {
   schemaContractVersion: number;
   restrictionVocabularyVersion: number;
@@ -218,6 +311,14 @@ export interface Bundle {
   datasheetLeaderPairs: DatasheetLeaderPair[];
   /** Always present and always empty by contract. The site never reads it. */
   datasheetDetachmentEligibility: never[];
+  // 005-rules-web-enrichment-display: the six 004-enrichment arrays, all optional (see the block
+  // above) so a pre-004 bundle continues to parse unchanged.
+  datasheetCompositions?: DatasheetComposition[];
+  datasheetOptionGroups?: DatasheetOptionGroup[];
+  datasheetOptionChoices?: DatasheetOptionChoice[];
+  factionRules?: FactionRule[];
+  detachmentRules?: DetachmentRule[];
+  keywordGlossary?: KeywordGlossaryEntry[];
 }
 
 /** What every page's banner reads, and what dist/build-info.json records. */
@@ -519,6 +620,30 @@ export const wargearOptionsByDatasheet: ReadonlyMap<string, readonly DatasheetWa
 export const leaderPairsByLeader: ReadonlyMap<string, readonly DatasheetLeaderPair[]> = groupBy(
   parsed.datasheetLeaderPairs,
   (p) => p.leaderDatasheetId,
+);
+
+// 005-rules-web-enrichment-display (tasks T004/T005): grouped indexes for the six 004-enrichment
+// arrays, each defaulting the possibly-absent array to `[]` here once, so every downstream reader
+// writes `compositionsByDatasheet.get(id) ?? []` exactly like every pre-existing index above.
+export const compositionsByDatasheet: ReadonlyMap<string, readonly DatasheetComposition[]> =
+  groupBy([...(parsed.datasheetCompositions ?? [])].sort(byLine), (c) => c.datasheetId);
+export const optionGroupsByDatasheet: ReadonlyMap<string, readonly DatasheetOptionGroup[]> =
+  groupBy([...(parsed.datasheetOptionGroups ?? [])].sort(byLine), (g) => g.datasheetId);
+export const optionChoicesByGroup: ReadonlyMap<string, readonly DatasheetOptionChoice[]> = groupBy(
+  parsed.datasheetOptionChoices ?? [],
+  (c) => c.groupId,
+);
+export const factionRulesByFaction: ReadonlyMap<string, readonly FactionRule[]> = groupBy(
+  [...(parsed.factionRules ?? [])].sort((a, b) => a.displayOrder - b.displayOrder),
+  (r) => r.factionId,
+);
+export const detachmentRulesByDetachment: ReadonlyMap<string, readonly DetachmentRule[]> = groupBy(
+  parsed.detachmentRules ?? [],
+  (r) => r.detachmentId,
+);
+export const keywordGlossaryByKey: ReadonlyMap<string, KeywordGlossaryEntry> = indexBy(
+  parsed.keywordGlossary ?? [],
+  (g) => g.keywordKey,
 );
 
 // ---------------------------------------------------------------------------
