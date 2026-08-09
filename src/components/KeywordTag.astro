@@ -1,0 +1,84 @@
+---
+// AI-Assisted: Claude Code (model: Claude Sonnet 5) - One keyword tag, glossary-aware
+// (005-rules-web-enrichment-display tasks T015/T016; spec.md FR-010 through FR-014, US2
+// acceptance scenarios 1-5; contracts/render-contract.md sections 2-3).
+//
+// Used by both the unit page's keyword list and WeaponTable's ability-keyword list, so the two
+// places a keyword can appear cannot resolve it differently. Every prop below preserves each call
+// site's EXISTING <li> markup exactly (class, and the bare `data-keyword` marker the unit keyword
+// list already carried) - this component changes only what goes INSIDE the <li>.
+//
+// When `resolveGlossary` finds no entry, the content is the keyword text alone: no <details>, no
+// `data-keyword-glossary` attribute, no tabindex - the render contract's "exactly as today" case
+// (FR-012). When it does, the content becomes a native <details>/<summary> disclosure. Native HTML
+// is the whole reason this design works with no script at all: click/tap toggles it, Enter/Space
+// toggles it while <summary> is focused, and <summary> is focusable without adding a tabindex -
+// three of the four required triggers (research.md section 2), and why SC-007 (zero pointer-only
+// interactions) holds even if the hover-enhancement script below never loads.
+import { resolveGlossary } from '../data/glossary.ts';
+
+interface Props {
+  text: string;
+  wrapperClass?: string;
+  /** Reproduces the unit keyword list's pre-existing bare `data-keyword` marker; weapon ability
+   *  keywords never carried one, so this defaults to false. */
+  markKeyword?: boolean;
+}
+
+const { text, wrapperClass, markKeyword = false } = Astro.props;
+const entry = resolveGlossary(text);
+---
+
+<li class={wrapperClass} data-keyword={markKeyword ? true : undefined}>
+  {
+    entry ? (
+      <details data-keyword-glossary={entry.keywordKey}>
+        <summary>{text}</summary>
+        <p class="keyword-glossary__summary">{entry.summary}</p>
+      </details>
+    ) : (
+      text
+    )
+  }
+</li>
+
+<script>
+  // Bundled (not is:inline), matching UnitFilter.astro's convention. Astro includes and runs a
+  // component's script once per page even when the component is used many times, so this runs
+  // once regardless of how many keyword tags the page renders.
+  //
+  // This is a pure ENHANCEMENT over the native toggle above: it adds a hover trigger (FR-010) and
+  // an Escape-to-close (render-contract.md section 3). Blocking this script narrows the
+  // interaction to click/tap and keyboard - it never removes them, the same fails-open posture
+  // UnitFilter.astro established for its own script (research.md section 2's documented, accepted
+  // no-JS degradation).
+  const HOVER_OPEN_DELAY_MS = 150;
+
+  const tooltips = document.querySelectorAll<HTMLDetailsElement>('[data-keyword-glossary]');
+
+  for (const details of tooltips) {
+    let openTimer: ReturnType<typeof setTimeout> | undefined;
+
+    details.addEventListener('mouseenter', () => {
+      clearTimeout(openTimer);
+      openTimer = setTimeout(() => {
+        details.open = true;
+      }, HOVER_OPEN_DELAY_MS);
+    });
+
+    details.addEventListener('mouseleave', () => {
+      clearTimeout(openTimer);
+      // A user who tabbed or clicked it open has pinned it; a stray mouseleave must not steal that.
+      if (!details.contains(document.activeElement)) {
+        details.open = false;
+      }
+    });
+
+    details.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && details.open) {
+        details.open = false;
+        details.querySelector('summary')?.focus();
+      }
+    });
+  }
+</script>

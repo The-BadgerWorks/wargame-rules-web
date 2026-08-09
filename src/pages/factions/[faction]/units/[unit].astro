@@ -20,10 +20,16 @@
 // every other section here. When option groups exist, WargearOptions supersedes CostTable's flat
 // wargear section (`showWargearFallback={false}`) so the same choices never appear twice (FR-008);
 // when they do not, CostTable's flat section renders exactly as it always has (FR-009).
+//
+// AI-Assisted note (model: Claude Sonnet 5, 005-rules-web-enrichment-display task T018): the
+// keyword list now renders through KeywordTag.astro instead of a bare `<li>`, so a keyword the
+// glossary covers exposes its definition in place (FR-010); an uncovered one is unchanged
+// (FR-012). WeaponTable.astro does the same for weapon ability keywords (task T017).
 import BaseLayout from '../../../../layouts/BaseLayout.astro';
 import AbilityList from '../../../../components/AbilityList.astro';
 import CostTable from '../../../../components/CostTable.astro';
 import FlagBadges from '../../../../components/FlagBadges.astro';
+import KeywordTag from '../../../../components/KeywordTag.astro';
 import StatLine from '../../../../components/StatLine.astro';
 import UnitComposition from '../../../../components/UnitComposition.astro';
 import WargearOptions from '../../../../components/WargearOptions.astro';
@@ -157,9 +163,7 @@ const led = (leaderPairsByLeader.get(datasheet.id) ?? [])
   <ul class="keyword-list">
     {
       keywords.map((keyword) => (
-        <li class="flag" data-keyword>
-          {keyword.keyword}
-        </li>
+        <KeywordTag text={keyword.keyword} wrapperClass="flag" markKeyword />
       ))
     }
   </ul>

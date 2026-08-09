@@ -1,0 +1,49 @@
+---
+// AI-Assisted: Claude Code (model: Claude Sonnet 5) - Shared rule-summary display
+// (005-rules-web-enrichment-display task T022; spec.md FR-015 through FR-019, US3, US4).
+//
+// One component renders both classes this feature adds - a faction's army rule(s) and a
+// detachment's own rule(s) - because they publish the identical shape (a name plus an optional
+// authored summary; bundle-schema-delta.md §2.5/§2.6) and a reader should not be able to tell, from
+// markup alone, that two independent bundle arrays produced what look like the same kind of box.
+// A faction MAY publish more than one army rule, so this renders every row it is given, not only
+// the first (Edge Cases).
+//
+// Renders nothing - no heading, no empty box, no placeholder - when given zero rules (FR-017,
+// FR-019 graceful absence): the caller only mounts this when resolution actually found something.
+// A rule whose summary is not yet authored still shows its name; the summary paragraph is simply
+// omitted, the same "show what is there, omit what is not" convention AbilityList and CostTable
+// already use elsewhere on this site. `heading` is a resolved chrome-strings value passed in by the
+// caller (armyRule or detachmentRule), not read from chrome-strings here, so this component stays
+// agnostic between the two.
+interface RuleLike {
+  id: string;
+  name: string;
+  summary?: string;
+}
+
+interface Props {
+  heading: string;
+  rules: readonly RuleLike[];
+  /** Distinguishes an army-rule box from a detachment-rule box for tests and styling. */
+  kind: 'army-rule' | 'detachment-rule';
+}
+
+const { heading, rules, kind } = Astro.props;
+---
+
+{
+  rules.length > 0 && (
+    <section class="rule-summary-section" data-rule-section={kind}>
+      <h2>{heading}</h2>
+      <ul class="rule-summary-list">
+        {rules.map((rule) => (
+          <li data-rule={rule.id}>
+            <p class="rule-summary__name">{rule.name}</p>
+            {rule.summary !== undefined && <p class="rule-summary__summary">{rule.summary}</p>}
+          </li>
+        ))}
+      </ul>
+    </section>
+  )
+}

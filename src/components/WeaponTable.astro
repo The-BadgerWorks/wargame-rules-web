@@ -9,7 +9,14 @@
 // `abilityKeywords` is a comma-separated list of KEYWORDS and nothing else - the bundle carries no
 // weapon rules-text field at all, by upstream design (Principle 4). It is split and rendered as
 // discrete tokens so that a template can never accidentally present a sentence here.
+//
+// AI-Assisted note (model: Claude Sonnet 5, 005-rules-web-enrichment-display task T017): each
+// token now renders through KeywordTag.astro instead of a bare `<li>`, so a weapon ability keyword
+// the glossary covers exposes its definition exactly like a unit keyword does (FR-010). An
+// uncovered token is unaffected: KeywordTag reproduces this file's original bare `<li>{keyword}</li>`
+// markup byte-for-byte when resolveGlossary finds nothing (FR-012).
 import strings from '../chrome-strings.json';
+import KeywordTag from './KeywordTag.astro';
 import type { DatasheetWeapon } from '../data/bundle.ts';
 
 interface Props {
@@ -63,7 +70,7 @@ function keywordsOf(weapon: DatasheetWeapon): string[] {
                   <td>
                     <ul class="weapon-keywords">
                       {keywordsOf(weapon).map((keyword) => (
-                        <li>{keyword}</li>
+                        <KeywordTag text={keyword} />
                       ))}
                     </ul>
                   </td>
