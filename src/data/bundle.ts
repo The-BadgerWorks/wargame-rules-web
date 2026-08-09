@@ -40,9 +40,14 @@ import { assertUniqueSlugs, detachSlug, factionCode, unitSlug } from './slugs.ts
 
 // ---------------------------------------------------------------------------
 // Bundle shape. Governed by wargame-rules-data/schemas/bundle.schema.json and by
-// 001-army-builder-app/contracts/reference-db-schema.md v1.2.0. This file mirrors those
+// 001-army-builder-app/contracts/reference-db-schema.md v1.4.0 (additive delta:
+// 004-rules-data-enrichment/contracts/bundle-schema-delta.md v1.1.0). This file mirrors those
 // definitions for type-checking; it does not redefine them. Absent optionals are OMITTED from the
 // published document, never null, which is why every optional below is `?` and never `| null`.
+//
+// AI-Assisted note (model: Claude Sonnet 5, 005-rules-web-enrichment-display task T032): the
+// citation above was v1.2.0; brought current to v1.4.0/bundle-schema-delta.md v1.1.0 to match the
+// six enrichment arrays this file now carries (see the T004/T005 note further down).
 // ---------------------------------------------------------------------------
 
 export interface Edition {
