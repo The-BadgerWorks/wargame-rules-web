@@ -3,6 +3,10 @@
 # synthetic fixtures), actionlint on workflow changes, and the path-exclusivity check that enforces
 # plan.md's Separation gate. The release-gating checks are NOT here — they are part of
 # `npm run build`, which Cloudflare Workers Builds runs (research D3).
+# AI-Assisted: Claude Code (model: Claude Fable 5) - Close the pre-merge gap found during spec 005:
+# add dual-fixture build + verify-dist jobs (previously deploy-time only) and a Playwright e2e job
+# (previously never run in CI). Both are deterministic against the synthetic fixtures — no network
+# fetch of live rules data.
 name: CI
 
 on:
@@ -39,6 +43,55 @@ jobs:
 
       - name: vitest
         run: npm test
+
+  build:
+    name: build + verify-dist (${{ matrix.fixture }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # Both bundle generations must build green: the pre-004 fixture proves the
+        # graceful-absence path, the enriched fixture proves the new sections
+        # (spec 005 SC-006). verify-dist runs inside `npm run build`.
+        fixture: [manifest-current.json, manifest-enriched.json]
+    env:
+      WGC_WEB_CHANNEL: published
+      WGC_WEB_MANIFEST_URL: ./test/fixtures/${{ matrix.fixture }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: astro build + verify-dist
+        run: npm run build
+
+  e2e:
+    name: playwright e2e
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium
+
+      # playwright.config.ts starts its own preview server against the enriched
+      # fixture manifest; no live rules data is fetched.
+      - name: playwright test
+        run: npx playwright test
 
   actionlint:
     name: actionlint
