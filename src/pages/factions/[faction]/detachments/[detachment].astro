@@ -15,10 +15,20 @@
 // Restrictions with no `detachmentId` apply edition-wide and are deliberately NOT rendered here:
 // FR-005 scopes this page to "every restriction attached to it", and src/data/bundle.ts exports
 // those separately for whichever page later claims them.
+//
+// AI-Assisted note (model: Claude Sonnet 5, 005-rules-web-enrichment-display tasks T024/T026):
+// added two rule sections, both via the shared RuleSummary component. The governing ARMY rule
+// (FR-016) is resolved through resolveGoverningArmyRule from this detachment's own faction -
+// readers often land here directly, without passing through the faction page first, so this page
+// cannot assume they have already seen it. The detachment's OWN rule (FR-018, FR-019) sits
+// alongside - not in place of - the existing restrictions and enhancements sections below it.
 import BaseLayout from '../../../../layouts/BaseLayout.astro';
 import EnhancementList from '../../../../components/EnhancementList.astro';
+import RuleSummary from '../../../../components/RuleSummary.astro';
 import strings from '../../../../chrome-strings.json';
+import { resolveGoverningArmyRule } from '../../../../data/army-rule.ts';
 import {
+  detachmentRulesByDetachment,
   detachmentSlugById,
   detachments,
   enhancementsByDetachment,
@@ -58,6 +68,8 @@ const { detachment, faction } = Astro.props;
 
 const restrictions = restrictionsByDetachment.get(detachment.id) ?? [];
 const enhancements = enhancementsByDetachment.get(detachment.id) ?? [];
+const governingArmyRule = resolveGoverningArmyRule(faction);
+const ownRules = detachmentRulesByDetachment.get(detachment.id) ?? [];
 ---
 
 <BaseLayout title={detachment.name}>
@@ -81,6 +93,14 @@ const enhancements = enhancementsByDetachment.get(detachment.id) ?? [];
       )
     }
   </p>
+
+  <RuleSummary
+    heading={strings.headings.armyRule}
+    rules={governingArmyRule?.rules ?? []}
+    kind="army-rule"
+  />
+
+  <RuleSummary heading={strings.headings.detachmentRule} rules={ownRules} kind="detachment-rule" />
 
   <h2>{strings.headings.restrictions}</h2>
   {

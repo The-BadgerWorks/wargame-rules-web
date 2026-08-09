@@ -9,6 +9,15 @@
 //
 // One browser (chromium) and no parallel projects: the filter is plain DOM API use with no
 // vendor-specific surface, and a second engine would double the CI cost of the suite for no signal.
+//
+// AI-Assisted note (model: Claude Sonnet 5, 005-rules-web-enrichment-display task T020): the
+// webServer now builds from `manifest-enriched.json` instead of `manifest-current.json`, so
+// e2e/keyword-glossary.spec.ts has real glossary-covered keywords, army rules, and detachment
+// rules to click, hover, and tab through in an actual browser. This is safe for filter.spec.ts:
+// the enriched fixture is a strict superset of the current one (same factions, detachments, and
+// datasheets, with only additive 004 arrays appended), so every entity and filter-relevant field
+// filter.spec.ts asserts against is unchanged. The pre-004 (no-enrichment) case does not need its
+// own e2e coverage - it is already proven, extensively, by the Vitest suite's `current` build.
 import { defineConfig, devices } from '@playwright/test';
 
 const PORT = 4321;
@@ -17,7 +26,7 @@ const HOST = '127.0.0.1';
 /** Both are forced so an e2e run can never build against the live published manifest. */
 const FIXTURE_ENV = {
   WGC_WEB_CHANNEL: 'published',
-  WGC_WEB_MANIFEST_URL: './test/fixtures/manifest-current.json',
+  WGC_WEB_MANIFEST_URL: './test/fixtures/manifest-enriched.json',
 };
 
 export default defineConfig({

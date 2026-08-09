@@ -1,0 +1,49 @@
+---
+// AI-Assisted: Claude Code (model: Claude Sonnet 5) - Starting unit composition
+// (005-rules-web-enrichment-display task T008; spec.md FR-004, FR-005, US1 scenarios 1 and 4).
+//
+// One row per published composition entry (bundle-schema-delta.md §2.1) - the model's name and its
+// minimum and maximum count per unit, as integers. A fixed-size unit publishes minCount = maxCount,
+// which is a real value, not a sign of missing data, so both columns always render even when equal.
+//
+// This component renders NOTHING - no heading, no empty table, no placeholder - for a unit whose
+// bundle entry carries no composition (FR-005): the caller only mounts it when there is at least
+// one row to show, exactly like every other "graceful absence" section on this page (StatLine's
+// invulnerable-save column, the leader-pairing list).
+import strings from '../chrome-strings.json';
+import type { DatasheetComposition } from '../data/bundle.ts';
+
+interface Props {
+  composition: readonly DatasheetComposition[];
+}
+
+const { composition } = Astro.props;
+---
+
+{
+  composition.length > 0 && (
+    <section class="composition-section" data-composition-section>
+      <h2>{strings.headings.composition}</h2>
+      <div class="table-scroll">
+        <table class="composition">
+          <thead>
+            <tr>
+              <th scope="col">{strings.headings.models}</th>
+              <th scope="col">{strings.labels.minCount}</th>
+              <th scope="col">{strings.labels.maxCount}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {composition.map((entry) => (
+              <tr data-composition={entry.line}>
+                <th scope="row">{entry.modelName}</th>
+                <td class="mono">{entry.minCount}</td>
+                <td class="mono">{entry.maxCount}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  )
+}

@@ -16,6 +16,13 @@
 // 3. The wargear section is OMITTED, not emptied, for a datasheet with no cost-bearing options
 //    (scenario 4, and the Edge Cases: "the corresponding section is simply omitted rather than
 //    shown empty").
+//
+// AI-Assisted note (model: Claude Sonnet 5, 005-rules-web-enrichment-display task T010): added
+// `showWargearFallback`. This flat, cost-only table is what a unit shows when its bundle entry
+// carries no full wargear option structure (FR-009); when it does, the unit page renders
+// WargearOptions.astro instead and passes `showWargearFallback={false}` here so the same choices
+// never appear twice (FR-008). The prop defaults to `true`, so this component's behavior for every
+// existing call site - and any future one that does not pass it - is unchanged.
 import strings from '../chrome-strings.json';
 import type {
   DatasheetCost,
@@ -27,9 +34,10 @@ interface Props {
   costs: readonly DatasheetCost[];
   tiers: readonly DatasheetCostTier[];
   wargearOptions: readonly DatasheetWargearOption[];
+  showWargearFallback?: boolean;
 }
 
-const { costs, tiers, wargearOptions } = Astro.props;
+const { costs, tiers, wargearOptions, showWargearFallback = true } = Astro.props;
 
 interface CostRow {
   key: string;
@@ -106,7 +114,7 @@ function signed(value: number): string {
 </section>
 
 {
-  wargearOptions.length > 0 && (
+  showWargearFallback && wargearOptions.length > 0 && (
     <section class="wargear-section">
       <h2>{strings.headings.wargearOptions}</h2>
       <div class="table-scroll">

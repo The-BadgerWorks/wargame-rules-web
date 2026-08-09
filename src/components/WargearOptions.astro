@@ -1,0 +1,89 @@
+---
+// AI-Assisted: Claude Code (model: Claude Sonnet 5) - The full wargear option structure
+// (005-rules-web-enrichment-display task T009; spec.md FR-006, FR-007, FR-008, US1 scenarios 2
+// and 3).
+//
+// Renders every option group (bundle-schema-delta.md §2.2) and every choice within it
+// (§2.3) - not only the choices the points source prices. Three decisions worth stating:
+//
+//   1. A choice's `pointsDelta` is read directly; when the bundle omits it the points cell is left
+//      empty rather than printed as "0" or "Free" (FR-007, Guarantee 10) - an unpriced choice must
+//      never be implied free. `pricedOptionId` is a producer-side reconciliation guarantee, not
+//      something this display re-derives (research.md §5).
+//   2. `isDefault` and `isNoChange` are marked with their own badges, mirroring FlagBadges' pattern
+//      of a conditionally-rendered `<span class="flag">` rather than a toggled boolean attribute -
+//      an explicit "no change" choice must read as a selectable alternative, never as a free add-on.
+//   3. This component renders nothing for a datasheet with no option groups; the unit page decides
+//      whether to fall back to CostTable's flat wargear section instead (FR-009).
+import strings from '../chrome-strings.json';
+import { optionChoicesByGroup } from '../data/bundle.ts';
+import type { DatasheetOptionGroup } from '../data/bundle.ts';
+
+interface Props {
+  groups: readonly DatasheetOptionGroup[];
+}
+
+const { groups } = Astro.props;
+
+function signed(value: number): string {
+  return value > 0 ? `+${value}` : `${value}`;
+}
+---
+
+{
+  groups.length > 0 && (
+    <section class="wargear-section" data-wargear-options>
+      <h2>{strings.headings.wargearOptions}</h2>
+      {groups.map((group) => {
+        const choices = optionChoicesByGroup.get(group.id) ?? [];
+        const showCount = choices.some((choice) => choice.count !== undefined);
+
+        return (
+          <div class="option-group" data-option-group={group.id} data-option-group-scope={group.scope}>
+            <p class="option-group__scope">
+              <span class="meta-label">{strings.labels.optionScope}</span>
+              <span>{strings.wargearScopes[group.scope]}</span>
+              {group.scopeN !== undefined && (
+                <span class="mono" data-option-scope-n={group.scopeN}>
+                  {group.scopeN}
+                </span>
+              )}
+            </p>
+            <div class="table-scroll">
+              <table class="option-choices">
+                <thead>
+                  <tr>
+                    <th scope="col">{strings.headings.wargearOptions}</th>
+                    {showCount && <th scope="col">{strings.labels.optionCount}</th>}
+                    <th scope="col">{strings.labels.pointsDelta}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {choices.map((choice) => (
+                    <tr data-option-choice={choice.id} data-option-points={choice.pointsDelta}>
+                      <th scope="row">
+                        {choice.name}
+                        {choice.isDefault && (
+                          <span class="flag" data-flag="default">
+                            {strings.flags.default}
+                          </span>
+                        )}
+                        {choice.isNoChange && (
+                          <span class="flag" data-flag="no-change">
+                            {strings.flags.noChange}
+                          </span>
+                        )}
+                      </th>
+                      {showCount && <td class="mono">{choice.count}</td>}
+                      <td class="mono">{choice.pointsDelta !== undefined && signed(choice.pointsDelta)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        );
+      })}
+    </section>
+  )
+}

@@ -13,15 +13,31 @@
 // The leader-pairing list is rendered for a Character only, and links to each led unit's own page.
 // A Character the bundle records no pairings for says so rather than showing nothing: silence would
 // be indistinguishable from a page that forgot to render the section.
+//
+// AI-Assisted note (model: Claude Sonnet 5, 005-rules-web-enrichment-display task T011): added the
+// composition section and the full wargear option display, FR-004 through FR-009. Both read only
+// this datasheet's own bundle rows and render nothing when there are none (FR-005), exactly like
+// every other section here. When option groups exist, WargearOptions supersedes CostTable's flat
+// wargear section (`showWargearFallback={false}`) so the same choices never appear twice (FR-008);
+// when they do not, CostTable's flat section renders exactly as it always has (FR-009).
+//
+// AI-Assisted note (model: Claude Sonnet 5, 005-rules-web-enrichment-display task T018): the
+// keyword list now renders through KeywordTag.astro instead of a bare `<li>`, so a keyword the
+// glossary covers exposes its definition in place (FR-010); an uncovered one is unchanged
+// (FR-012). WeaponTable.astro does the same for weapon ability keywords (task T017).
 import BaseLayout from '../../../../layouts/BaseLayout.astro';
 import AbilityList from '../../../../components/AbilityList.astro';
 import CostTable from '../../../../components/CostTable.astro';
 import FlagBadges from '../../../../components/FlagBadges.astro';
+import KeywordTag from '../../../../components/KeywordTag.astro';
 import StatLine from '../../../../components/StatLine.astro';
+import UnitComposition from '../../../../components/UnitComposition.astro';
+import WargearOptions from '../../../../components/WargearOptions.astro';
 import WeaponTable from '../../../../components/WeaponTable.astro';
 import strings from '../../../../chrome-strings.json';
 import {
   abilitiesByDatasheet,
+  compositionsByDatasheet,
   costTiersByDatasheet,
   costsByDatasheet,
   datasheets,
@@ -31,6 +47,7 @@ import {
   keywordsByDatasheet,
   leaderPairsByLeader,
   modelsByDatasheet,
+  optionGroupsByDatasheet,
   unitHref,
   unitSlugById,
   wargearOptionsByDatasheet,
@@ -72,6 +89,8 @@ const rangedWeapons = weapons.filter((weapon) => !weapon.isMelee);
 const meleeWeapons = weapons.filter((weapon) => weapon.isMelee);
 const abilities = abilitiesByDatasheet.get(datasheet.id) ?? [];
 const keywords = keywordsByDatasheet.get(datasheet.id) ?? [];
+const composition = compositionsByDatasheet.get(datasheet.id) ?? [];
+const optionGroups = optionGroupsByDatasheet.get(datasheet.id) ?? [];
 
 // The led units are listed by name and link only. They deliberately carry no FlagBadges: the badges
 // on this page describe THIS unit, and repeating a led unit's categories in the same document would
@@ -129,6 +148,8 @@ const led = (leaderPairsByLeader.get(datasheet.id) ?? [])
     )
   }
 
+  <UnitComposition composition={composition} />
+
   <h2>{strings.headings.models}</h2>
   <StatLine models={models} />
 
@@ -142,9 +163,7 @@ const led = (leaderPairsByLeader.get(datasheet.id) ?? [])
   <ul class="keyword-list">
     {
       keywords.map((keyword) => (
-        <li class="flag" data-keyword>
-          {keyword.keyword}
-        </li>
+        <KeywordTag text={keyword.keyword} wrapperClass="flag" markKeyword />
       ))
     }
   </ul>
@@ -153,7 +172,9 @@ const led = (leaderPairsByLeader.get(datasheet.id) ?? [])
     costs={costsByDatasheet.get(datasheet.id) ?? []}
     tiers={costTiersByDatasheet.get(datasheet.id) ?? []}
     wargearOptions={wargearOptionsByDatasheet.get(datasheet.id) ?? []}
+    showWargearFallback={optionGroups.length === 0}
   />
+  <WargearOptions groups={optionGroups} />
 
   {
     datasheet.isCharacter && (

@@ -33,7 +33,10 @@
     "keywords": "Keywords",
     "points": "Points",
     "wargearOptions": "Wargear options",
-    "leads": "Can lead"
+    "leads": "Can lead",
+    "composition": "Composition",
+    "armyRule": "Army rule",
+    "detachmentRule": "Detachment rule"
   },
   "labels": {
     "detachmentPointsCost": "Detachment points",
@@ -67,14 +70,25 @@
     "unverifiedPricingNote": "This points value has not been verified against a published source.",
     "filterUnits": "Filter units",
     "filterByCategory": "Filter by category",
-    "filterAllCategories": "All categories"
+    "filterAllCategories": "All categories",
+    "minCount": "Min",
+    "maxCount": "Max",
+    "optionScope": "Applies to",
+    "optionCount": "Count"
   },
   "flags": {
     "battleline": "Battleline",
     "character": "Character",
     "epicHero": "Epic Hero",
     "dedicatedTransport": "Dedicated Transport",
-    "legends": "Legends"
+    "legends": "Legends",
+    "default": "Default",
+    "noChange": "No change"
+  },
+  "wargearScopes": {
+    "unit": "Per unit",
+    "model": "Per model",
+    "per_n_models": "Per group of models"
   },
   "abilityTypes": {
     "core": "Core",

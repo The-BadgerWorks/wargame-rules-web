@@ -17,11 +17,18 @@
 // index card uses - so the two places that group a faction's children cannot disagree. A leaf
 // faction (no children) renders no such section, the same way it renders no empty detachments/units
 // section elsewhere on this page.
+//
+// AI-Assisted note (model: Claude Sonnet 5, 005-rules-web-enrichment-display task T023): added the
+// governing army rule section (FR-015, FR-017), resolved via resolveGoverningArmyRule so a
+// sub-faction with no rule of its own shows its parent's - the same function the detachment page
+// (task T024) calls, so the two page types cannot disagree about which rule governs.
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import FlagBadges from '../../../components/FlagBadges.astro';
+import RuleSummary from '../../../components/RuleSummary.astro';
 import SubFactionList from '../../../components/SubFactionList.astro';
 import UnitFilter from '../../../components/UnitFilter.astro';
 import strings from '../../../chrome-strings.json';
+import { resolveGoverningArmyRule } from '../../../data/army-rule.ts';
 import {
   childFactionsOf,
   detachmentHref,
@@ -55,6 +62,7 @@ const parent = parentFactionOf(faction);
 const children = childFactionsOf(faction);
 const ownDetachments = detachmentsByFaction.get(faction.id) ?? [];
 const ownUnits = unitsByFaction.get(faction.id) ?? [];
+const governingArmyRule = resolveGoverningArmyRule(faction);
 ---
 
 <BaseLayout title={faction.name}>
@@ -74,6 +82,12 @@ const ownUnits = unitsByFaction.get(faction.id) ?? [];
   }
 
   <SubFactionList parent={faction} subFactions={children} variant="section" />
+
+  <RuleSummary
+    heading={strings.headings.armyRule}
+    rules={governingArmyRule?.rules ?? []}
+    kind="army-rule"
+  />
 
   <h2>{strings.headings.detachments}</h2>
   {
