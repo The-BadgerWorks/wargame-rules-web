@@ -494,3 +494,27 @@ code,
 .disclaimer__body {
   margin: 0;
 }
+
+/* --------------------------------------------------------------------------
+ * Keyword glossary floating hover preview (cursor-hover-keyword-tooltip)
+ *
+ * Hover-only: click/tap/keyboard still use the in-place <details> disclosure
+ * (KeywordTag.astro's markup, `.keyword-glossary__summary` inherits body text
+ * styling from there). This box is created and positioned entirely by that
+ * component's script; it does not exist in server-rendered HTML.
+ * -------------------------------------------------------------------------- */
+
+.keyword-float-tip {
+  position: fixed;
+  z-index: 20;
+  max-width: 40ch;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--rule);
+  border-top: 2px solid var(--accent);
+  border-radius: var(--radius);
+  background: var(--panel);
+  color: var(--ink);
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  pointer-events: none;
+}
