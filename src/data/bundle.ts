@@ -138,6 +138,15 @@ export interface Datasheet {
    * there is nothing to warn about differently until a bundle actually says otherwise.
    */
   wargearOptionState?: 'full' | 'partial';
+  /**
+   * AI-Assisted note (model: Claude Sonnet 5, loadout-rendering-conformance branch): whether the
+   * datacard's default-equipment sentence(s) were extracted (loadout-schema-delta.md §3.2,
+   * `defaultEquipmentState`). 'none' = the datacard states no default-equipment sentence at all -
+   * distinct from 'partial'/omitted, which mean extraction was attempted and incomplete or not
+   * attempted. Only 'none' suppresses the Unit Composition block's equipment lines outright; the
+   * other states still render whatever equipment groups resolved.
+   */
+  defaultEquipmentState?: 'none' | 'extracted' | 'partial';
 }
 
 export interface DatasheetKeyword {
@@ -247,6 +256,16 @@ export interface DatasheetOptionGroup {
   defaultChoiceId?: string;
   minChoices?: number;
   maxChoices?: number;
+  /**
+   * AI-Assisted note (model: Claude Sonnet 5, loadout-rendering-conformance branch): the
+   * eligibility-scope columns loadout-schema-delta.md §3.1 adds. `eligibleModelName` and
+   * `eligibleMaxCount` are independent - neither implies the other - and rendering-contract.md §4.3
+   * checks `eligibleModelName` BEFORE `scope`, because a scoped stem still publishes
+   * `scope = 'unit'` with the restriction carried here.
+   */
+  eligibleModelName?: string;
+  eligibleMaxCount?: number;
+  isPerModel?: boolean;
 }
 
 /**
@@ -299,12 +318,67 @@ export interface KeywordGlossaryEntry {
   summary: string;
 }
 
+// ---------------------------------------------------------------------------
+// AI-Assisted: Claude Code (model: Claude Sonnet 5, loadout-rendering-conformance branch) - The
+// four arrays/columns rendering-contract.md v1.0.0's input model reads (§2), per
+// loadout-schema-delta.md §2.1-2.3 (006-generation: option-choice items, equipment groups/items)
+// and display-fidelity-schema-delta.md §2.1 (007-generation: item constraints). Field names and
+// types are taken from those two contracts' tables, not from the pipeline's implementation - this
+// file mirrors the published shape, it does not redefine it. All four are optional on `Bundle`,
+// same additive discipline as every other enrichment class here.
+// ---------------------------------------------------------------------------
+
+/** One item on one side of one wargear choice (loadout-schema-delta.md §2.1). */
+export interface DatasheetOptionChoiceItem {
+  choiceId: string;
+  role: 'granted' | 'replaced';
+  itemIndex: number;
+  itemName: string;
+  count?: number;
+  weaponLine?: number;
+}
+
+/** One default-equipment sentence and who it applies to (loadout-schema-delta.md §2.2). */
+export interface DatasheetEquipmentGroup {
+  id: string;
+  datasheetId: string;
+  line: number;
+  appliesTo: 'unit' | 'model_group';
+  /** Present exactly when appliesTo = 'model_group'. */
+  modelName?: string;
+  compositionLine?: number;
+}
+
+/** One item of one default-equipment group (loadout-schema-delta.md §2.3). */
+export interface DatasheetEquipmentItem {
+  groupId: string;
+  itemIndex: number;
+  itemName: string;
+  count?: number;
+  weaponLine?: number;
+}
+
+/** A restriction the datacard states against a named item (display-fidelity-schema-delta.md §2.1). */
+export interface DatasheetItemConstraint {
+  datasheetId: string;
+  constraintIndex: number;
+  constraintType: 'not_replaceable' | 'one_per_unit';
+  itemName: string;
+  weaponLine?: number;
+  modelName?: string;
+}
+
 export interface SnapshotMeta {
   schemaContractVersion: number;
   restrictionVocabularyVersion: number;
   rulesVersionId: string;
   publishedAt: string;
   sourceNote: string;
+  /** Optional; display-fidelity-schema-delta.md §3.1/§3.3. Informational only - this site does not
+   *  branch on either: an unknown constraintType renders nothing regardless (render contract §4.6),
+   *  and this site implements whichever rendering-contract version its own code implements. */
+  itemConstraintVocabularyVersion?: number;
+  renderingContractVersion?: string;
 }
 
 export interface Bundle {
@@ -337,6 +411,11 @@ export interface Bundle {
   factionRules?: FactionRule[];
   detachmentRules?: DetachmentRule[];
   keywordGlossary?: KeywordGlossaryEntry[];
+  // loadout-rendering-conformance: rendering-contract.md v1.0.0's input model.
+  datasheetOptionChoiceItems?: DatasheetOptionChoiceItem[];
+  datasheetEquipmentGroups?: DatasheetEquipmentGroup[];
+  datasheetEquipmentItems?: DatasheetEquipmentItem[];
+  datasheetItemConstraints?: DatasheetItemConstraint[];
 }
 
 /** What every page's banner reads, and what dist/build-info.json records. */
@@ -663,6 +742,28 @@ export const keywordGlossaryByKey: ReadonlyMap<string, KeywordGlossaryEntry> = i
   parsed.keywordGlossary ?? [],
   (g) => g.keywordKey,
 );
+
+// loadout-rendering-conformance: grouped indexes for rendering-contract.md v1.0.0's input arrays.
+// Sort order here is a convenience for callers, not a substitute for the renderer's own ordering -
+// src/data/assemble-loadout.ts still applies rendering-contract.md §6's exact keys when it builds a
+// LoadoutInput, because "replaced before granted" and "(itemName, constraintType) ASCII" are not
+// expressible as a single stable sort of the whole array up front.
+const byRoleThenItemIndex = (a: DatasheetOptionChoiceItem, b: DatasheetOptionChoiceItem): number =>
+  (a.role === b.role ? 0 : a.role === 'replaced' ? -1 : 1) || a.itemIndex - b.itemIndex;
+
+export const optionChoiceItemsByChoice: ReadonlyMap<string, readonly DatasheetOptionChoiceItem[]> =
+  groupBy([...(parsed.datasheetOptionChoiceItems ?? [])].sort(byRoleThenItemIndex), (i) => i.choiceId);
+export const equipmentGroupsByDatasheet: ReadonlyMap<string, readonly DatasheetEquipmentGroup[]> =
+  groupBy([...(parsed.datasheetEquipmentGroups ?? [])].sort(byLine), (g) => g.datasheetId);
+export const equipmentItemsByGroup: ReadonlyMap<string, readonly DatasheetEquipmentItem[]> = groupBy(
+  [...(parsed.datasheetEquipmentItems ?? [])].sort((a, b) => a.itemIndex - b.itemIndex),
+  (i) => i.groupId,
+);
+export const itemConstraintsByDatasheet: ReadonlyMap<string, readonly DatasheetItemConstraint[]> =
+  groupBy(
+    [...(parsed.datasheetItemConstraints ?? [])].sort((a, b) => a.constraintIndex - b.constraintIndex),
+    (c) => c.datasheetId,
+  );
 
 // ---------------------------------------------------------------------------
 // Routing. Slugs are derived and asserted here, once, so a charset violation or a collision fails

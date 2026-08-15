@@ -1,0 +1,119 @@
+{
+  "_comment": "AI-Assisted: Claude Code (model: claude-opus-5) - Expected canonical output for every case in cases.json under rendering-contract.md v1.0.0, generated once during planning by a throwaway reference implementation of the contract's own selection tables and reviewed by hand. AI-Assisted: Claude Code (model: claude-sonnet-5) - Added C-004/O-010..O-015 (007 task T047), derived by hand from contract §4's selection tables and cross-checked against `pipeline/render/loadout.py`'s own output before landing. Every value is derived from the INVENTED names and counts in cases.json; no publisher text is present. An implementation conforms when its canonical string equals `canonical` byte for byte and its omission codes equal `omitted` as a set.",
+  "contractVersion": "1.0.0",
+  "cases": [
+    {
+      "id": "C-001-composition-fixed-and-range",
+      "canonical": "1 Warden Prime\n4-9 Wardens\nEvery model is equipped with: glimmer carbine; 2 hookblade.",
+      "omitted": []
+    },
+    {
+      "id": "C-002-composition-model-group-equipment",
+      "canonical": "1 Warden Prime\n4-9 Wardens\nEvery Warden Prime is equipped with: prime baton; signal lantern.\nEvery Wardens is equipped with: glimmer carbine.",
+      "omitted": []
+    },
+    {
+      "id": "C-003-omission-does-not-cascade",
+      "canonical": "4-9 Wardens\nEvery model is equipped with: glimmer carbine.",
+      "omitted": [
+        "RND-COMP-BAD-RANGE",
+        "RND-EQP-NO-SUBJECT",
+        "RND-EQP-NO-ITEMS"
+      ]
+    },
+    {
+      "id": "O-001-single-replace-whole-unit",
+      "canonical": "This unit can have hookblade replaced with lantern pike.",
+      "omitted": []
+    },
+    {
+      "id": "O-002-legacy-and-bundle-render-alike",
+      "canonical": "This unit can have hookblade replaced with lantern pike.\nThis unit can have hookblade; glimmer carbine replaced with lantern pike; 2 shard flask.",
+      "omitted": []
+    },
+    {
+      "id": "O-003-scoped-stem-up-to",
+      "canonical": "Up to 2 Warden Prime in this unit can have hookblade replaced with prime baton.",
+      "omitted": []
+    },
+    {
+      "id": "O-004-shared-stem-alternatives",
+      "canonical": "Each model in this unit can have hookblade replaced with one of the following:\n- lantern pike\n- shard flask",
+      "omitted": []
+    },
+    {
+      "id": "O-005-grant-only-up-to-n",
+      "canonical": "One model in this unit for every 5 models it contains can be equipped with up to 2 of the following:\n- shard flask\n- signal lantern",
+      "omitted": []
+    },
+    {
+      "id": "O-006-differing-replaced-sets-fall-back",
+      "canonical": "This unit can have hookblade replaced with lantern pike.\nThis unit can have glimmer carbine replaced with shard flask.",
+      "omitted": []
+    },
+    {
+      "id": "O-007-unresolved-choice-omitted-sibling-survives",
+      "canonical": "This unit can be equipped with shard flask.\nThis unit can have hookblade removed.",
+      "omitted": [
+        "RND-OPT-NO-ITEMS",
+        "RND-OPT-NO-SCOPE-N"
+      ]
+    },
+    {
+      "id": "O-008-nested-group-and-no-change",
+      "canonical": "This unit can have hookblade replaced with lantern pike.\n  This unit can be equipped with one of the following:\n  - signal lantern\n  - no change",
+      "omitted": []
+    },
+    {
+      "id": "O-009-item-constraints",
+      "canonical": "This unit can be equipped with shard flask.\nhookblade cannot be replaced.\nThe prime baton of Warden Prime cannot be replaced.\nOnly one model in this unit can be equipped with signal lantern.",
+      "omitted": []
+    },
+    {
+      "id": "C-004-no-name-and-unknown-equipment-scope",
+      "canonical": "1-3 Glimmer Adept\nEvery model is equipped with: hex ward.",
+      "omitted": [
+        "RND-COMP-NO-NAME",
+        "RND-EQP-UNKNOWN-SCOPE"
+      ]
+    },
+    {
+      "id": "O-010-named-each-and-named-subjects",
+      "canonical": "Each Glimmer Adept in this unit can have glow rod replaced with hex ward.\nThe Warden Prime in this unit can be equipped with signal lantern.",
+      "omitted": []
+    },
+    {
+      "id": "O-011-unknown-scope-omits-whole-group",
+      "canonical": "This unit can be equipped with hex ward.",
+      "omitted": [
+        "RND-OPT-UNKNOWN-SCOPE"
+      ]
+    },
+    {
+      "id": "O-012-no-choices-omits-whole-group",
+      "canonical": "This unit can be equipped with glow rod.",
+      "omitted": [
+        "RND-OPT-NO-CHOICES"
+      ]
+    },
+    {
+      "id": "O-013-standalone-no-change-and-unknown-constraint-type",
+      "canonical": "This unit can be left unchanged.",
+      "omitted": [
+        "RND-CST-UNKNOWN-TYPE"
+      ]
+    },
+    {
+      "id": "O-014-nested-group-depth-cap",
+      "canonical": "This unit can be equipped with glow rod.\n  This unit can be equipped with hex ward.\n    This unit can be equipped with signal lantern.\n    This unit can be equipped with prime baton.",
+      "omitted": []
+    },
+    {
+      "id": "O-015-parent-cycle-omits-the-group",
+      "canonical": "This unit can be equipped with signal lantern.",
+      "omitted": [
+        "RND-OPT-GROUP-CYCLE"
+      ]
+    }
+  ]
+}

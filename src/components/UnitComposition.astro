@@ -9,35 +9,30 @@
 // what does it cost", per the operator's readability request. CostTable keeps the cost-bearing
 // wargear fallback only.
 //
-// A fixed-size composition line (min = max) renders as "{min} {name}" with no range at all - "1 X"
-// is a real value, not "1 to 1". A ranged line renders "{min}-{max} {name}". Neither embeds a
-// pre-formatted range string: the hyphen is its own chrome-strings token
-// (`strings.prose.rangeSeparator`) so the content-boundary scanner sees three traceable pieces
-// (a bundle number, a chrome-strings character, a bundle number) rather than one merged "4-9"
-// string that matches nothing it knows about.
-//
-// The size/points block reuses the SAME row-selection rule CostTable always used - prefer
-// `datasheetCostTiers` over the flat `datasheetCosts` when the datasheet has tiers, because a tier
-// row carries the same model count and points PLUS the copy index an escalating price starts at.
-// Unlike the old table, this reads the tier's own `label` verbatim ("5 models, third copy onward")
-// instead of a separate "from copy" column - the bundle's label already says that in words, so a
-// second, parallel numeric column would only repeat it.
-//
-// This component renders NOTHING for a unit whose bundle entry carries neither composition rows
-// nor cost rows (FR-005's graceful absence, extended to the section's new second responsibility):
-// the caller only mounts it when there is at least one line to show. Composition and size/points
-// are independently gated within the section - a unit can show one, the other, or both, matching
-// how every other "graceful absence" surface on this page already behaves.
+// AI-Assisted note (model: Claude Sonnet 5, loadout-rendering-conformance branch): the composition
+// lines above are now rendered by rendering-contract.md v1.0.0's Unit Composition block
+// (`renderCompositionBlock`, fed by `assembleCompositionInput`) instead of this component's own
+// ad-hoc prose - the FROZEN contract owns the model-line and equipped-with-default-equipment
+// wording now, proven byte-identical against the vendored conformance corpus
+// (test/rendering-conformance.test.ts). The unit-size points lines below remain exactly as the
+// prose-composition-wargear branch left them: they are this site's own addition, not contract
+// material (the contract's templates never mention points), so they keep rendering from
+// `costs`/`tiers` unchanged and stay positioned clearly after the composition block.
 import strings from '../chrome-strings.json';
-import type { DatasheetComposition, DatasheetCost, DatasheetCostTier } from '../data/bundle.ts';
+import LoadoutLines from './LoadoutLines.astro';
+import { assembleCompositionInput } from '../data/assemble-loadout.ts';
+import { renderCompositionBlock } from '../data/loadout-render.ts';
+import type { DatasheetCost, DatasheetCostTier } from '../data/bundle.ts';
 
 interface Props {
-  composition: readonly DatasheetComposition[];
+  datasheetId: string;
   costs: readonly DatasheetCost[];
   tiers: readonly DatasheetCostTier[];
 }
 
-const { composition, costs, tiers } = Astro.props;
+const { datasheetId, costs, tiers } = Astro.props;
+
+const composition = renderCompositionBlock(assembleCompositionInput(datasheetId));
 
 interface SizeRow {
   key: string;
@@ -68,21 +63,11 @@ const anyUnverified = sizeRows.some((row) => row.pricingConfidence === 'unverifi
 ---
 
 {
-  (composition.length > 0 || sizeRows.length > 0) && (
+  (composition.lines.length > 0 || sizeRows.length > 0) && (
     <section class="composition-section" data-composition-section>
       <h2>{strings.headings.composition}</h2>
 
-      {
-        composition.length > 0 && (
-          <ul class="composition-model-list">
-            {composition.map((entry) => (
-              <li class="composition-model-line" data-composition={entry.line}>
-                <span class="mono">{entry.minCount}</span>{entry.minCount !== entry.maxCount && (<>{strings.prose.rangeSeparator}<span class="mono">{entry.maxCount}</span></>)}{' '}<span>{entry.modelName}</span>
-              </li>
-            ))}
-          </ul>
-        )
-      }
+      {composition.lines.length > 0 && <LoadoutLines lines={composition.lines} dataAttr="composition-line" />}
 
       {
         sizeRows.length > 0 && (
