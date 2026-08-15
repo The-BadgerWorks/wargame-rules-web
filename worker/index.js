@@ -37,6 +37,15 @@ export default {
       return Response.redirect(url.toString(), 301);
     }
 
+    // Exact-match public exemption required by contracts/rebuild-notification.md §4:
+    // build-info.json is the rebuild contract's public observable (rules version id,
+    // bundle sha, withdrawn flag — all already public via the data manifest). The
+    // scheduled manifest-watch job reads it unauthenticated to detect stale deploys.
+    // Deliberately no prefix/wildcard matching — nothing else is exempt.
+    if (url.pathname === '/build-info.json') {
+      return env.ASSETS.fetch(request);
+    }
+
     if (env.GATE_DISABLED === 'true') {
       return env.ASSETS.fetch(request);
     }
