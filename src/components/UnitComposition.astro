@@ -18,6 +18,16 @@
 // prose-composition-wargear branch left them: they are this site's own addition, not contract
 // material (the contract's templates never mention points), so they keep rendering from
 // `costs`/`tiers` unchanged and stay positioned clearly after the composition block.
+//
+// AI-Assisted note (model: Claude Sonnet 5, bugfix on loadout-rendering-conformance): a real-bundle
+// operator report showed two "5 models" rows with different points and no way to tell them apart.
+// The prose-composition-wargear branch's removal of a separate copy-index column assumed a cost
+// tier's own `label` already said "third copy onward" in words - true of the ENRICHED TEST FIXTURE
+// only, not of the real bundle, whose tier labels are plain ("5 models") with the escalation
+// carried solely in `copyIndexMin`. A row with `copyIndexMin > 1` now appends the qualifier itself
+// (", copy {n} onwards"); a `copyIndexMin` of 1 (the common case) is unaffected. No ordinal-suffix
+// logic ("3rd") - the copy index is a plain cardinal number, in its own span like every other
+// bundle number on this page.
 import strings from '../chrome-strings.json';
 import LoadoutLines from './LoadoutLines.astro';
 import { assembleCompositionInput } from '../data/assemble-loadout.ts';
@@ -81,7 +91,7 @@ const anyUnverified = sizeRows.some((row) => row.pricingConfidence === 'unverifi
                   data-cost-points={row.points}
                   data-cost-confidence={row.pricingConfidence}
                 >
-                  <span>{row.label}</span>
+                  <span>{row.label}{row.copyIndexMin > 1 && (<>{strings.prose.copyOnwardsPre}<span class="mono">{row.copyIndexMin}</span>{strings.prose.copyOnwardsPost}</>)}</span>
                   <span class="mono">{strings.prose.pointsOpen}{row.points} {strings.prose.pointsSuffix}</span>
                   {row.pricingConfidence === 'unverified' && (
                     <span class="flag flag--unverified">{strings.labels.unverifiedPricing}</span>
