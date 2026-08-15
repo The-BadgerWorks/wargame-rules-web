@@ -185,14 +185,14 @@ describe('Points (FR-012, FR-014, US2 scenarios 5 and 7)', () => {
     expect(rendered.get('10-1')!).toContain('data-cost-points="140"');
   });
 
-  it('shows an escalating cost for repeated copies as its own row', async () => {
+  it('shows an escalating cost for repeated copies as its own row, using the tier label verbatim', async () => {
     const html = await page(BRAMBLE_WARDEN);
 
     expect(attrValues(html, 'cost')).toContain('5-3');
     const escalating = rows(html, 'cost').get('5-3')!;
     expect(escalating).toContain('data-cost-points="65"');
-    expect(escalating).toContain('data-cost-from="3"');
-    expect(text(html)).toContain(strings.labels.copyIndexMin);
+    // The tier's own label already says which copy it starts from - no separate column for it.
+    expect(text(escalating)).toContain('5 models, third copy onward');
   });
 
   it('visibly marks an unverified cost row rather than presenting it as a verified one', async () => {

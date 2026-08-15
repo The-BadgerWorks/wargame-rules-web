@@ -1,0 +1,46 @@
+---
+// AI-Assisted: Claude Code (model: Claude Sonnet 5) - One wargear choice's line content
+// (prose-composition-wargear branch), factored out of WargearOptions.astro so the exact same
+// markup renders a choice whether it appears as a dash-list item or embedded in a single-choice
+// sentence ("This unit can take {this}.") - Astro components, unlike React ones, cannot return
+// JSX from a plain frontmatter function, so a shared fragment needs its own small component.
+//
+// `count` is OPTIONAL on a choice (bundle-schema-delta.md §2.3) and is rendered only when present
+// - never a fabricated "1" - matching the same "show what is there, omit what is not" rule
+// `pointsDelta` already followed here. The "(N pts)" suffix is split into two chrome-strings
+// pieces either side of the number ("(" and "pts)") rather than one combined template string,
+// because the content-boundary scanner (scripts/verify-dist.mjs) requires every distinct token in
+// a rendered text node to trace to either a whole bundle value or a whole chrome-strings value -
+// a JS template literal that glues site prose directly onto a bundle number produces a merged
+// string that matches neither.
+import strings from '../chrome-strings.json';
+import type { DatasheetOptionChoice } from '../data/bundle.ts';
+
+interface Props {
+  choice: DatasheetOptionChoice;
+}
+
+const { choice } = Astro.props;
+
+function signed(value: number): string {
+  return value > 0 ? `+${value}` : `${value}`;
+}
+---
+
+<span class="wargear-choice-line" data-option-choice={choice.id} data-option-points={choice.pointsDelta}>
+  {choice.count !== undefined && <span class="mono">{choice.count}</span>}
+  <span>{choice.name}</span>
+  {choice.pointsDelta !== undefined && (
+    <span class="mono">{strings.prose.pointsOpen}{signed(choice.pointsDelta)} {strings.prose.pointsSuffix}</span>
+  )}
+  {choice.isDefault && (
+    <span class="flag" data-flag="default">
+      {strings.flags.default}
+    </span>
+  )}
+  {choice.isNoChange && (
+    <span class="flag" data-flag="no-change">
+      {strings.flags.noChange}
+    </span>
+  )}
+</span>

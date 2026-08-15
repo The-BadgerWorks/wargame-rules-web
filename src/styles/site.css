@@ -4,6 +4,11 @@
  * AI-Assisted note (model: claude-sonnet-5, PO review finding 2026-08-05): added the
  * .sub-factions / .sub-faction-list rules below for the faction index/faction-page nesting change.
  *
+ * AI-Assisted note (model: Claude Sonnet 5, prose-composition-wargear branch): replaced the
+ * composition and wargear-options table rules with the composition, option-group, and
+ * wargear-choice prose rules below, and added .keyword-float-tip (cursor-hover-keyword-tooltip
+ * branch, not separately noted at the time) for the keyword glossary's cursor-anchored preview.
+ *
  * No CSS framework and no build step beyond Astro's own: this is a reference site whose per-page
  * payload is HTML plus this one file plus one small filter script. It uses system fonts so nothing
  * is fetched from a third party, and it carries no decorative imagery of any kind - FR-024 forbids
@@ -455,6 +460,74 @@ code,
   display: flex;
   flex-wrap: wrap;
   gap: 0.3rem;
+}
+
+/* --------------------------------------------------------------------------
+ * Unit composition and wargear options as prose (prose-composition-wargear)
+ * -------------------------------------------------------------------------- */
+
+.composition-model-list,
+.composition-size-list {
+  list-style: none;
+  margin: 0.4rem 0 0;
+  padding: 0;
+}
+
+.composition-model-line,
+.composition-size-line {
+  padding: 0.15rem 0;
+}
+
+/* The "spaced block" the operator asked for: the size/points lines read as a distinct group
+ * below the model lines, not a continuation of them. */
+.composition-size-list {
+  margin-top: 0.75rem;
+}
+
+.option-group {
+  margin: 0.85rem 0 0;
+}
+
+.option-group:first-of-type {
+  margin-top: 0.4rem;
+}
+
+.option-group__sentence {
+  margin: 0;
+}
+
+.wargear-choice-list {
+  list-style: none;
+  margin: 0.3rem 0 0;
+  padding: 0;
+}
+
+/* A CSS-drawn dash marker, not rendered text: it is never part of the document's text content, so
+ * it needs no chrome-strings entry and the content-boundary scanner never sees it (verify-dist.mjs
+ * scans HTML text nodes, not generated ::before content). */
+.wargear-choice-list li {
+  position: relative;
+  padding: 0.15rem 0 0.15rem 1rem;
+}
+
+.wargear-choice-list li::before {
+  content: '\2013';
+  position: absolute;
+  left: 0;
+  color: var(--ink-muted);
+}
+
+.wargear-choice-line {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.3rem;
+}
+
+.wargear-partial-note {
+  margin: 0.5rem 0 0;
+  color: var(--ink-muted);
+  font-size: 0.875rem;
 }
 
 .cost-note {

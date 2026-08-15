@@ -43,8 +43,6 @@
     "points": "Points",
     "maxPerArmy": "Max per army",
     "maxCopiesPerArmy": "Max copies per army",
-    "modelCount": "Models",
-    "copyIndexMin": "From copy",
     "pointsDelta": "Points change",
     "movement": "M",
     "toughness": "T",
@@ -70,11 +68,7 @@
     "unverifiedPricingNote": "This points value has not been verified against a published source.",
     "filterUnits": "Filter units",
     "filterByCategory": "Filter by category",
-    "filterAllCategories": "All categories",
-    "minCount": "Min",
-    "maxCount": "Max",
-    "optionScope": "Applies to",
-    "optionCount": "Count"
+    "filterAllCategories": "All categories"
   },
   "flags": {
     "battleline": "Battleline",
@@ -85,10 +79,20 @@
     "default": "Default",
     "noChange": "No change"
   },
-  "wargearScopes": {
-    "unit": "Per unit",
-    "model": "Per model",
-    "per_n_models": "Per group of models"
+  "prose": {
+    "rangeSeparator": "-",
+    "pointsOpen": "(",
+    "pointsSuffix": "pts)",
+    "sentenceEnd": ".",
+    "perNModelsPrefix": "For every",
+    "perNModelsSuffix": "models in this unit, one model can take one of the following:",
+    "unitMultiplePrefix": "This unit can take one of the following:",
+    "unitSinglePrefix": "This unit can take",
+    "modelMultiplePrefix": "Each model in this unit can take one of the following:",
+    "modelSinglePrefix": "Each model in this unit can take"
+  },
+  "notes": {
+    "wargearPartial": "Some wargear options for this unit are not yet captured in the current data version."
   },
   "abilityTypes": {
     "core": "Core",

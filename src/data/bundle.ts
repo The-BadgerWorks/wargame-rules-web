@@ -13,6 +13,11 @@
 // reference-db-schema.md v1.2.0; bringing it to v1.4.0 / bundle-schema-delta.md v1.1.0 is tracked
 // separately (tasks.md T032) rather than folded in here.
 //
+// AI-Assisted note (model: Claude Sonnet 5, prose-composition-wargear branch): added
+// `Datasheet.wargearOptionState`, an additive optional column distinguishing complete wargear
+// extraction from partial, so the unit page can note when a datasheet's options are known to be
+// incomplete rather than presenting a short list as if it were the whole story.
+//
 // Two rules that are easy to get wrong and are therefore written down (research D4):
 //
 //   1. NEVER fetch in a component. Component frontmatter re-runs per page, so a fetch there would
@@ -125,6 +130,14 @@ export interface Datasheet {
   maxCopiesPerArmy?: number;
   damagedThreshold?: number;
   detailEditionCode?: string;
+  /**
+   * AI-Assisted note (model: Claude Sonnet 5, prose-composition-wargear branch): whether the full
+   * wargear option structure is complete for this datasheet. 'partial' means the parser could not
+   * extract every group - the unit page shows a note saying so alongside whatever it did extract.
+   * Omitted on an older bundle that predates this field, and treated the same as 'full' (no note):
+   * there is nothing to warn about differently until a bundle actually says otherwise.
+   */
+  wargearOptionState?: 'full' | 'partial';
 }
 
 export interface DatasheetKeyword {

@@ -154,7 +154,8 @@
       "isCharacter": false,
       "isEpicHero": false,
       "isBattleline": true,
-      "isDedicatedTransport": false
+      "isDedicatedTransport": false,
+      "wargearOptionState": "full"
     },
     {
       "id": "ds-choir-echo",
@@ -179,7 +180,8 @@
       "isEpicHero": false,
       "isBattleline": false,
       "isDedicatedTransport": false,
-      "detailEditionCode": "synth-0e"
+      "detailEditionCode": "synth-0e",
+      "wargearOptionState": "partial"
     },
     {
       "id": "ds-seedpod-hauler",
@@ -732,6 +734,14 @@
       "defaultChoiceId": "oc-lattice-drone-1-1",
       "minChoices": 1,
       "maxChoices": 1
+    },
+    {
+      "id": "og-lattice-drone-2",
+      "datasheetId": "ds-lattice-drone",
+      "line": 2,
+      "scope": "unit",
+      "minChoices": 0,
+      "maxChoices": 1
     }
   ],
   "datasheetOptionChoices": [
@@ -775,6 +785,15 @@
       "isDefault": false,
       "isNoChange": false,
       "pointsDelta": 15
+    },
+    {
+      "id": "oc-lattice-drone-2-1",
+      "groupId": "og-lattice-drone-2",
+      "name": "Ident Beacon",
+      "count": 1,
+      "isDefault": false,
+      "isNoChange": false,
+      "pointsDelta": 10
     }
   ],
   "factionRules": [
