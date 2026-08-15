@@ -25,6 +25,13 @@
 // keyword list now renders through KeywordTag.astro instead of a bare `<li>`, so a keyword the
 // glossary covers exposes its definition in place (FR-010); an uncovered one is unchanged
 // (FR-012). WeaponTable.astro does the same for weapon ability keywords (task T017).
+//
+// AI-Assisted note (model: Claude Sonnet 5, prose-composition-wargear branch): UnitComposition now
+// also owns the unit-size points rows (previously CostTable's), so it is passed `costs`/`tiers`
+// here instead of CostTable. Added the wargearOptionState === 'partial' note, shown once after
+// whichever wargear presentation rendered (the merged sentence display or the flat fallback),
+// since 'partial' can describe either case - the parser may have extracted some groups and missed
+// others, or missed all of them and left only cost-bearing options behind.
 import BaseLayout from '../../../../layouts/BaseLayout.astro';
 import AbilityList from '../../../../components/AbilityList.astro';
 import CostTable from '../../../../components/CostTable.astro';
@@ -148,7 +155,11 @@ const led = (leaderPairsByLeader.get(datasheet.id) ?? [])
     )
   }
 
-  <UnitComposition composition={composition} />
+  <UnitComposition
+    composition={composition}
+    costs={costsByDatasheet.get(datasheet.id) ?? []}
+    tiers={costTiersByDatasheet.get(datasheet.id) ?? []}
+  />
 
   <h2>{strings.headings.models}</h2>
   <StatLine models={models} />
@@ -169,12 +180,17 @@ const led = (leaderPairsByLeader.get(datasheet.id) ?? [])
   </ul>
 
   <CostTable
-    costs={costsByDatasheet.get(datasheet.id) ?? []}
-    tiers={costTiersByDatasheet.get(datasheet.id) ?? []}
     wargearOptions={wargearOptionsByDatasheet.get(datasheet.id) ?? []}
     showWargearFallback={optionGroups.length === 0}
   />
   <WargearOptions groups={optionGroups} />
+  {
+    datasheet.wargearOptionState === 'partial' && (
+      <p class="wargear-partial-note" data-wargear-partial-note>
+        {strings.notes.wargearPartial}
+      </p>
+    )
+  }
 
   {
     datasheet.isCharacter && (

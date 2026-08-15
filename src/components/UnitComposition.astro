@@ -2,48 +2,112 @@
 // AI-Assisted: Claude Code (model: Claude Sonnet 5) - Starting unit composition
 // (005-rules-web-enrichment-display task T008; spec.md FR-004, FR-005, US1 scenarios 1 and 4).
 //
-// One row per published composition entry (bundle-schema-delta.md §2.1) - the model's name and its
-// minimum and maximum count per unit, as integers. A fixed-size unit publishes minCount = maxCount,
-// which is a real value, not a sign of missing data, so both columns always render even when equal.
+// AI-Assisted note (model: Claude Sonnet 5, prose-composition-wargear branch): reworked from a
+// two-column min/max table into count-first prose lines ("1 Terminator Squad Leader",
+// "4-9 Terminators"), and absorbed the unit-size cost rows CostTable used to render as its own
+// "Points" table - this is now the one place a reader looks for "what is this unit made of and
+// what does it cost", per the operator's readability request. CostTable keeps the cost-bearing
+// wargear fallback only.
 //
-// This component renders NOTHING - no heading, no empty table, no placeholder - for a unit whose
-// bundle entry carries no composition (FR-005): the caller only mounts it when there is at least
-// one row to show, exactly like every other "graceful absence" section on this page (StatLine's
-// invulnerable-save column, the leader-pairing list).
+// A fixed-size composition line (min = max) renders as "{min} {name}" with no range at all - "1 X"
+// is a real value, not "1 to 1". A ranged line renders "{min}-{max} {name}". Neither embeds a
+// pre-formatted range string: the hyphen is its own chrome-strings token
+// (`strings.prose.rangeSeparator`) so the content-boundary scanner sees three traceable pieces
+// (a bundle number, a chrome-strings character, a bundle number) rather than one merged "4-9"
+// string that matches nothing it knows about.
+//
+// The size/points block reuses the SAME row-selection rule CostTable always used - prefer
+// `datasheetCostTiers` over the flat `datasheetCosts` when the datasheet has tiers, because a tier
+// row carries the same model count and points PLUS the copy index an escalating price starts at.
+// Unlike the old table, this reads the tier's own `label` verbatim ("5 models, third copy onward")
+// instead of a separate "from copy" column - the bundle's label already says that in words, so a
+// second, parallel numeric column would only repeat it.
+//
+// This component renders NOTHING for a unit whose bundle entry carries neither composition rows
+// nor cost rows (FR-005's graceful absence, extended to the section's new second responsibility):
+// the caller only mounts it when there is at least one line to show. Composition and size/points
+// are independently gated within the section - a unit can show one, the other, or both, matching
+// how every other "graceful absence" surface on this page already behaves.
 import strings from '../chrome-strings.json';
-import type { DatasheetComposition } from '../data/bundle.ts';
+import type { DatasheetComposition, DatasheetCost, DatasheetCostTier } from '../data/bundle.ts';
 
 interface Props {
   composition: readonly DatasheetComposition[];
+  costs: readonly DatasheetCost[];
+  tiers: readonly DatasheetCostTier[];
 }
 
-const { composition } = Astro.props;
+const { composition, costs, tiers } = Astro.props;
+
+interface SizeRow {
+  key: string;
+  label: string;
+  points: number;
+  copyIndexMin: number;
+  pricingConfidence: DatasheetCost['pricingConfidence'];
+}
+
+const sizeRows: SizeRow[] =
+  tiers.length > 0
+    ? tiers.map((tier) => ({
+        key: `${tier.modelCount}-${tier.copyIndexMin}`,
+        label: tier.label,
+        points: tier.points,
+        copyIndexMin: tier.copyIndexMin,
+        pricingConfidence: tier.pricingConfidence,
+      }))
+    : costs.map((cost) => ({
+        key: `${cost.modelCount}-1`,
+        label: cost.label,
+        points: cost.points,
+        copyIndexMin: 1,
+        pricingConfidence: cost.pricingConfidence,
+      }));
+
+const anyUnverified = sizeRows.some((row) => row.pricingConfidence === 'unverified');
 ---
 
 {
-  composition.length > 0 && (
+  (composition.length > 0 || sizeRows.length > 0) && (
     <section class="composition-section" data-composition-section>
       <h2>{strings.headings.composition}</h2>
-      <div class="table-scroll">
-        <table class="composition">
-          <thead>
-            <tr>
-              <th scope="col">{strings.headings.models}</th>
-              <th scope="col">{strings.labels.minCount}</th>
-              <th scope="col">{strings.labels.maxCount}</th>
-            </tr>
-          </thead>
-          <tbody>
+
+      {
+        composition.length > 0 && (
+          <ul class="composition-model-list">
             {composition.map((entry) => (
-              <tr data-composition={entry.line}>
-                <th scope="row">{entry.modelName}</th>
-                <td class="mono">{entry.minCount}</td>
-                <td class="mono">{entry.maxCount}</td>
-              </tr>
+              <li class="composition-model-line" data-composition={entry.line}>
+                <span class="mono">{entry.minCount}</span>{entry.minCount !== entry.maxCount && (<>{strings.prose.rangeSeparator}<span class="mono">{entry.maxCount}</span></>)}{' '}<span>{entry.modelName}</span>
+              </li>
             ))}
-          </tbody>
-        </table>
-      </div>
+          </ul>
+        )
+      }
+
+      {
+        sizeRows.length > 0 && (
+          <>
+            <h3>{strings.headings.points}</h3>
+            <ul class="composition-size-list">
+              {sizeRows.map((row) => (
+                <li
+                  class="composition-size-line"
+                  data-cost={row.key}
+                  data-cost-points={row.points}
+                  data-cost-confidence={row.pricingConfidence}
+                >
+                  <span>{row.label}</span>
+                  <span class="mono">{strings.prose.pointsOpen}{row.points} {strings.prose.pointsSuffix}</span>
+                  {row.pricingConfidence === 'unverified' && (
+                    <span class="flag flag--unverified">{strings.labels.unverifiedPricing}</span>
+                  )}
+                </li>
+              ))}
+            </ul>
+            {anyUnverified && <p class="cost-note">{strings.labels.unverifiedPricingNote}</p>}
+          </>
+        )
+      }
     </section>
   )
 }
