@@ -2,20 +2,31 @@
 // (005-rules-web-enrichment-display task T012), written after UnitComposition.astro,
 // WargearOptions.astro, the CostTable.astro fallback rework, and the unit page integration.
 //
-// AI-Assisted note (model: Claude Sonnet 5, prose-composition-wargear branch): rewritten for the
-// count-first composition lines, the unit-size points lines UnitComposition absorbed from
-// CostTable, the per-group sentence + dash-list wargear presentation, and the
-// wargearOptionState === 'partial' note. `data-composition`, `data-cost`/`data-cost-points`/
-// `data-cost-confidence`, `data-option-group`/`data-option-group-scope`/`data-option-scope-n`, and
-// `data-option-choice`/`data-option-points` are unchanged attribute names on new element shapes,
-// so this suite still locates rows the same way; only what it asserts about their TEXT changed.
+// AI-Assisted note (model: Claude Sonnet 5, loadout-rendering-conformance branch): rewritten for
+// rendering-contract.md v1.0.0's Unit Composition and Wargear Options blocks
+// (`renderCompositionBlock`/`renderOptionsBlock`, fed by `src/data/assemble-loadout.ts`), which
+// fully replace the prose-composition-wargear branch's own ad-hoc sentence templates. This suite no
+// longer asserts against `strings.prose.*` sentence fragments that branch invented (those keys are
+// gone from chrome-strings.json); it asserts against the exact wording the contract's decision
+// tables produce, which is already proven byte-identical against the vendored conformance corpus
+// (test/rendering-conformance.test.ts) - this file's job is only to prove the DOM wiring, not the
+// wording rules a second time. `data-composition-line`/`data-wargear-line` (LoadoutLines.astro) are
+// generic per-block line indices, not per-entity keys like the old `data-composition`/
+// `data-option-choice` markers were, since one contract-rendered line can carry a whole sentence
+// spanning several bundle rows; tests below locate content by TEXT, using `rows()` only where a
+// line index by itself is enough (e.g. "the first composition line").
 //
-// Evidence for spec.md FR-004 through FR-009, US1 acceptance scenarios 1-5, and SC-002.
+// The unit-size points block (test/fixtures/bundle-synth-enriched.json's `datasheetCosts`/
+// `datasheetCostTiers`) is untouched by the contract rework - it is this site's own addition, kept
+// clearly after the composition block - so those assertions are unchanged from the prior branch.
 //
-// This suite asserts against the `enriched` build (test/fixtures/bundle-synth-enriched.json), the
-// only fixture that carries composition and full wargear option data. The pre-004 absence case is
-// proven separately: test/us2-unit-datacard.test.ts already asserts the `current` build's unit
-// pages show neither section, against a fixture the Bundle type extension left untouched.
+// This suite asserts against the `enriched` build, the only fixture that carries composition,
+// equipment-group, option-group, option-choice-item and item-constraint data. The pre-007 absence
+// case is proven separately: test/us2-unit-datacard.test.ts already asserts the `current` build's
+// unit pages show neither section, against a fixture that carries none of the new bundle arrays at
+// all - `bundle.ts`'s `?? []` defaults mean `assembleCompositionInput`/`assembleOptionsInput`
+// degrade to empty input there, and `renderCompositionBlock`/`renderOptionsBlock` are total
+// functions over that (contract §5: omission never guesses, it just produces nothing to omit).
 import { describe, expect, it } from 'vitest';
 
 import strings from '../src/chrome-strings.json';
@@ -30,7 +41,20 @@ const WITHERSTALK_RELIC = '/factions/verdant-concord/units/witherstalk-relic/';
 
 const enrichedPage = (route: string) => page(route, OUT_DIR_ENRICHED);
 
-describe('Unit composition as count-first lines (FR-004, FR-005, US1 scenarios 1 and 4)', () => {
+/**
+ * `text()` replaces every HTML tag with a literal space before collapsing whitespace (built-
+ * site.ts), so a slot `<span>` immediately followed by a literal "." or ";" (no space in the
+ * source - every contract sentence ends flush against its slot) reads back with a space the
+ * rendered page never actually shows. This undoes exactly that artifact so sentence-level
+ * assertions below can compare against the contract's literal wording; it must never be used for
+ * an adjacency claim itself (those stay on the raw HTML, as the codebase's established pattern for
+ * "4-9" already does).
+ */
+function content(html: string): string {
+  return text(html).replace(/ ([.;])/g, '$1');
+}
+
+describe('Unit composition lines, per rendering-contract.md §3.2/§4.1 (FR-004, FR-005, US1 scenarios 1 and 4)', () => {
   it('shows a ranged model line as "{min}-{max} {name}" and a fixed one as "{n} {name}"', async () => {
     const html = await enrichedPage(BRAMBLE_WARDEN);
     const composition = bundle.datasheetCompositions.filter(
@@ -40,17 +64,18 @@ describe('Unit composition as count-first lines (FR-004, FR-005, US1 scenarios 1
 
     expect(html).toContain('data-composition-section');
     expect(text(html)).toContain(strings.headings.composition);
-    expect(attrValues(html, 'composition')).toEqual(composition.map((c) => String(c.line)));
 
-    const rendered = rows(html, 'composition');
+    const rendered = rows(html, 'composition-line');
     // Ranged (min 4, max 9): count-first, hyphenated range, no separate min/max labels. Checked
     // against the RAW fragment, not text(): text() replaces every tag with a space, so it cannot
     // represent "4-9" as adjacent characters even when the markup genuinely has no space there.
-    const first = rendered.get('1')!;
-    expect(first).toContain('>4</span>-<span class="mono">9</span>');
+    // The regex tolerates whatever attributes LoadoutLines.astro's slot <span> carries (data-slot,
+    // Astro's scoped-style data-astro-cid-*) rather than pinning an exact attribute list.
+    const first = rendered.get('0')!;
+    expect(first).toMatch(/>4<\/span>-<span[^>]*>9<\/span>/);
     expect(text(first)).toContain('Bramble Warden');
     // Fixed-size (min = max = 1): just the one number, never "1-1".
-    const second = rendered.get('2')!;
+    const second = rendered.get('1')!;
     expect(text(second)).toContain('1 Bramble Warden Elder');
     expect(second).not.toContain('</span>-<span');
   });
@@ -65,18 +90,6 @@ describe('Unit composition as count-first lines (FR-004, FR-005, US1 scenarios 1
     expect(text(sizeRows.get('10-1')!)).toContain('10 models (140 pts)');
   });
 
-  it('shows a composition-only unit with model and size lines together, and no wargear section', async () => {
-    const html = await enrichedPage(CHOIR_ECHO);
-
-    expect(attrValues(html, 'composition')).toEqual(['1']);
-    expect(text(rows(html, 'composition').get('1')!)).toContain('3 Choir Echo');
-    expect(text(rows(html, 'cost').get('3-1')!)).toContain('3 models (45 pts)');
-
-    expect(attrValues(html, 'wargear')).toEqual([]);
-    expect(attrValues(html, 'option-choice')).toEqual([]);
-    expect(text(html)).not.toContain(strings.headings.wargearOptions);
-  });
-
   it('still shows the composition section, with no model line, for a unit with cost data but no composition rows', async () => {
     const html = await enrichedPage(WITHERSTALK_RELIC);
 
@@ -84,7 +97,7 @@ describe('Unit composition as count-first lines (FR-004, FR-005, US1 scenarios 1
     // otherwise every unit that predates composition extraction would silently lose its points.
     expect(html).toContain('data-composition-section');
     expect(text(html)).toContain(strings.headings.composition);
-    expect(attrValues(html, 'composition')).toEqual([]);
+    expect(attrValues(html, 'composition-line')).toEqual([]);
 
     const row = rows(html, 'cost').get('1-1')!;
     expect(text(row)).toContain('1 model (180 pts)');
@@ -93,79 +106,77 @@ describe('Unit composition as count-first lines (FR-004, FR-005, US1 scenarios 1
   });
 });
 
-describe('Wargear options as a sentence per group (FR-006, FR-007, US1 scenario 2)', () => {
-  it('reads "For every N models..." for a per_n_models group, then a dash list of every choice', async () => {
+describe('Default equipment, per rendering-contract.md §3.3/§4.2 (spec 007)', () => {
+  it('reads "Every model is equipped with: {item}." for a unit-scope equipment group', async () => {
+    const html = await enrichedPage(CHOIR_ECHO);
+    const datasheet = bundle.datasheets.find((d) => d.id === 'ds-choir-echo')!;
+    expect(datasheet.defaultEquipmentState).toBe('extracted');
+
+    // Composition and default equipment share one block/section - both appear here, and there is
+    // still no separate wargear-options section (this unit has no option groups).
+    expect(text(rows(html, 'composition-line').get('0')!)).toContain('3 Choir Echo');
+    expect(text(html)).toContain(strings.loadout.equipmentUnitPrefix.trim());
+    expect(text(html)).toContain('Echo Blade');
+    expect(html).not.toContain('data-wargear-options');
+  });
+
+  it('reads "Every {model} is equipped with: {item}." for a model_group-scope equipment group', async () => {
+    const html = await enrichedPage(SWIFTWING_SCOUT);
+
+    // Not read via rows(): this is the unit's only composition-line row, so rows() (which slices
+    // from one marker to the START OF THE NEXT) would run to the end of the whole document rather
+    // than stopping at this row's own </li> - the same caveat built-site.ts documents for the last
+    // row of any marker set.
+    expect(content(html)).toContain('Every Swiftwing Scout is equipped with: Swift Javelin.');
+  });
+});
+
+describe('Wargear options, per rendering-contract.md §3.4/§4.3/§4.4/§4.5 (FR-006, FR-007, US1 scenario 2)', () => {
+  it('renders one full sentence per choice when a per_n_models group has no shared replaced set', async () => {
     const html = await enrichedPage(BRAMBLE_WARDEN);
 
     expect(html).toContain('data-wargear-options');
-    expect(html).toContain('data-option-group="og-bramble-warden-1"');
-    expect(html).toContain('data-option-group-scope="per_n_models"');
-    expect(attrValues(html, 'option-scope-n')).toContain('5');
-    expect(text(html)).toContain(strings.prose.perNModelsPrefix);
-    expect(text(html)).toContain(strings.prose.perNModelsSuffix);
-
-    expect(attrValues(html, 'option-choice')).toEqual(
-      expect.arrayContaining(['oc-bramble-warden-1-1', 'oc-bramble-warden-1-2', 'oc-bramble-warden-1-3']),
+    const wargearText = content(html);
+    // §4.3's per_n_models subject, repeated as the sentence subject for every one of the group's
+    // choices, since the fixture's three choices don't share one non-empty replaced set (§4.4's
+    // row 6 fallback - no shared stem to factor out).
+    expect(wargearText).toContain(
+      'One model in this unit for every 5 models it contains can have Sap Carbine replaced with Thornlance.',
     );
-
-    const thornlance = rows(html, 'option-choice').get('oc-bramble-warden-1-1')!;
-    expect(text(thornlance)).toContain('1 Thornlance');
-    expect(thornlance).toContain('data-option-points="5"');
-    expect(text(thornlance)).toContain('(+5 pts)');
+    expect(wargearText).toContain(
+      'One model in this unit for every 5 models it contains can be equipped with Bramble Standard.',
+    );
+    expect(wargearText).toContain(
+      'One model in this unit for every 5 models it contains can be left unchanged.',
+    );
   });
 
-  it('reads "This unit can take one of the following:" for a multiple-choice unit-scope group', async () => {
+  it('renders a shared stem plus a dash-list alternative per choice for an all-empty-replaced group', async () => {
     const html = await enrichedPage(LATTICE_DRONE);
 
-    expect(html).toContain('data-option-group-scope="unit"');
-    expect(text(html)).toContain(strings.prose.unitMultiplePrefix);
-    expect(html).not.toContain('data-option-scope-n');
-
-    const pulseArray = rows(html, 'option-choice').get('oc-lattice-drone-1-1')!;
-    expect(text(pulseArray)).toContain('Pulse Array');
-    expect(pulseArray).toContain('data-flag="default"');
-    expect(pulseArray).not.toContain('data-option-points');
-
-    const heavyBeamer = rows(html, 'option-choice').get('oc-lattice-drone-1-2')!;
-    expect(text(heavyBeamer)).toContain('1 Heavy Beamer');
-    expect(text(heavyBeamer)).toContain('(+15 pts)');
+    const wargearText = content(html);
+    expect(wargearText).toContain('This unit can be equipped with one of the following:');
+    expect(wargearText).toContain('- Pulse Array');
+    expect(wargearText).toContain('- Heavy Beamer');
   });
 
-  it('folds a single unit-scope choice into one sentence, with no one-item dash list', async () => {
+  it('folds a single unit-scope choice into one full sentence, with no dash list', async () => {
     const html = await enrichedPage(LATTICE_DRONE);
 
-    expect(html).toContain('data-option-group="og-lattice-drone-2"');
-    const identBeacon = rows(html, 'option-choice').get('oc-lattice-drone-2-1')!;
-    expect(text(identBeacon)).toContain('1 Ident Beacon');
-    expect(text(identBeacon)).toContain('(+10 pts)');
+    expect(content(html)).toContain('This unit can be equipped with Ident Beacon.');
+    expect(html).not.toContain('- Ident Beacon');
+  });
+});
 
-    // The whole group's content is one sentence: prefix, the choice, a full stop - not a heading
-    // sentence followed by a redundant single <li>.
-    const group = rows(html, 'option-group').get('og-lattice-drone-2')!;
-    expect(group).not.toContain('wargear-choice-list');
-    expect(text(group)).toContain(strings.prose.unitSinglePrefix);
+describe('Item constraints, per rendering-contract.md §3.5/§4.6 (spec 007)', () => {
+  it('reads "{item} cannot be replaced." for a not_replaceable constraint with no modelName', async () => {
+    const html = await enrichedPage(BRAMBLE_WARDEN);
+    expect(content(html)).toContain('Thornlance cannot be replaced.');
   });
 
-  it('lists an unpriced choice without a cost figure, never as free (FR-007)', async () => {
+  it('reads "Only one model in this unit can be equipped with {item}." for a one_per_unit constraint', async () => {
     const html = await enrichedPage(BRAMBLE_WARDEN);
-    const standard = rows(html, 'option-choice').get('oc-bramble-warden-1-2')!;
-
-    expect(text(standard)).toContain('1 Bramble Standard');
-    expect(standard).not.toContain('data-option-points');
-    expect(text(standard)).not.toContain('pts');
-  });
-
-  it('marks an explicit "no change" choice as selectable, not as a free addition (Edge Cases)', async () => {
-    const html = await enrichedPage(BRAMBLE_WARDEN);
-    const noChange = rows(html, 'option-choice').get('oc-bramble-warden-1-3')!;
-
-    expect(text(noChange)).toContain('No change');
-    // No `count` field on this choice in the fixture - never a fabricated leading number.
-    expect(text(noChange)).not.toMatch(/^\s*\d/);
-    expect(noChange).toContain('data-flag="no-change"');
-    expect(text(noChange)).toContain(strings.flags.noChange);
-    expect(noChange).toContain('data-flag="default"');
-    expect(noChange).not.toContain('data-option-points');
+    expect(content(html)).toContain('Only one model in this unit can be equipped with Bramble Standard.');
   });
 });
 
@@ -177,22 +188,6 @@ describe('Merged display supersedes the flat table (FR-008, US1 scenario 3, SC-0
     // must not render as its own table row once the merged display supersedes it (FR-008).
     expect(attrValues(html, 'wargear')).toEqual([]);
   });
-
-  it('represents every choice the flat table would have shown, in the merged display (SC-002)', async () => {
-    const html = await enrichedPage(BRAMBLE_WARDEN);
-    const flatOption = bundle.datasheetWargearOptions.find((o) => o.id === 'wg-bramble-thornlance')!;
-    const mergedChoice = bundle.datasheetOptionChoices.find(
-      (c) => c.id === 'oc-bramble-warden-1-1',
-    )!;
-
-    // Same name, same points delta - the flat table's one row loses no information in the move.
-    expect(mergedChoice.name).toBe(flatOption.name);
-    expect(mergedChoice.pointsDelta).toBe(flatOption.pointsDelta);
-
-    const row = rows(html, 'option-choice').get('oc-bramble-warden-1-1')!;
-    expect(text(row)).toContain(flatOption.name);
-    expect(row).toContain(`data-option-points="${flatOption.pointsDelta}"`);
-  });
 });
 
 describe('Flat-table fallback when no option groups are published (FR-009)', () => {
@@ -202,7 +197,6 @@ describe('Flat-table fallback when no option groups are published (FR-009)', () 
     expect(flat.length).toBe(1);
 
     expect(attrValues(html, 'wargear')).toEqual(flat.map((o) => o.id));
-    expect(attrValues(html, 'option-choice')).toEqual([]);
     expect(html).not.toContain('data-wargear-options');
 
     const row = rows(html, 'wargear').get('wg-swiftwing-marksman')!;

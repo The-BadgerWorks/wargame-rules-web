@@ -167,7 +167,8 @@
       "isCharacter": false,
       "isEpicHero": false,
       "isBattleline": false,
-      "isDedicatedTransport": false
+      "isDedicatedTransport": false,
+      "defaultEquipmentState": "extracted"
     },
     {
       "id": "ds-lattice-drone",
@@ -206,7 +207,8 @@
       "isCharacter": false,
       "isEpicHero": false,
       "isBattleline": false,
-      "isDedicatedTransport": false
+      "isDedicatedTransport": false,
+      "defaultEquipmentState": "extracted"
     },
     {
       "id": "ds-thicket-matriarch",
@@ -794,6 +796,55 @@
       "isDefault": false,
       "isNoChange": false,
       "pointsDelta": 10
+    }
+  ],
+  "datasheetEquipmentGroups": [
+    { "id": "eg-choir-echo-1", "datasheetId": "ds-choir-echo", "line": 1, "appliesTo": "unit" },
+    {
+      "id": "eg-swiftwing-scout-1",
+      "datasheetId": "ds-swiftwing-scout",
+      "line": 1,
+      "appliesTo": "model_group",
+      "modelName": "Swiftwing Scout"
+    }
+  ],
+  "datasheetEquipmentItems": [
+    { "groupId": "eg-choir-echo-1", "itemIndex": 0, "itemName": "Echo Blade", "weaponLine": 1 },
+    { "groupId": "eg-swiftwing-scout-1", "itemIndex": 0, "itemName": "Swift Javelin", "weaponLine": 1 }
+  ],
+  "datasheetOptionChoiceItems": [
+    {
+      "choiceId": "oc-bramble-warden-1-1",
+      "role": "replaced",
+      "itemIndex": 0,
+      "itemName": "Sap Carbine",
+      "weaponLine": 1
+    },
+    {
+      "choiceId": "oc-bramble-warden-1-1",
+      "role": "granted",
+      "itemIndex": 0,
+      "itemName": "Thornlance",
+      "weaponLine": 2
+    },
+    { "choiceId": "oc-bramble-warden-1-2", "role": "granted", "itemIndex": 0, "itemName": "Bramble Standard" },
+    { "choiceId": "oc-lattice-drone-1-1", "role": "granted", "itemIndex": 0, "itemName": "Pulse Array" },
+    { "choiceId": "oc-lattice-drone-1-2", "role": "granted", "itemIndex": 0, "itemName": "Heavy Beamer" },
+    { "choiceId": "oc-lattice-drone-2-1", "role": "granted", "itemIndex": 0, "itemName": "Ident Beacon" }
+  ],
+  "datasheetItemConstraints": [
+    {
+      "datasheetId": "ds-bramble-warden",
+      "constraintIndex": 1,
+      "constraintType": "not_replaceable",
+      "itemName": "Thornlance",
+      "weaponLine": 2
+    },
+    {
+      "datasheetId": "ds-bramble-warden",
+      "constraintIndex": 2,
+      "constraintType": "one_per_unit",
+      "itemName": "Bramble Standard"
     }
   ],
   "factionRules": [

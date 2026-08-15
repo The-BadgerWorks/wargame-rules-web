@@ -3,93 +3,39 @@
 // (005-rules-web-enrichment-display task T009; spec.md FR-006, FR-007, FR-008, US1 scenarios 2
 // and 3).
 //
-// AI-Assisted note (model: Claude Sonnet 5, prose-composition-wargear branch): reworked from one
-// table per group into a sentence per group, per the operator's readability request:
+// AI-Assisted note (model: Claude Sonnet 5, loadout-rendering-conformance branch): this component
+// no longer authors its own sentences. It renders rendering-contract.md v1.0.0's Wargear Options
+// block (`renderOptionsBlock`, fed by `assembleOptionsInput`) - the option-group sentences/dash
+// lists (contract §3.4, §4.3, §4.4, §4.5, nested per §6) AND the item-constraint lines (§3.5, §4.6)
+// that this component never showed before. The prose-composition-wargear branch's own per-group
+// sentence templates (`multipleChoicePrefix`/`singleChoicePrefix`) and its `WargearChoiceLine`
+// sub-component are gone: the contract's decision tables now own every word here, proven
+// byte-identical against the vendored conformance corpus (test/rendering-conformance.test.ts).
+// `is_default` and `points_delta` are deliberately absent from every template (contract §4.4's own
+// note) - `WargearChoiceLine` existed only to show that points figure, so nothing replaces it.
 //
-//   - `per_n_models` always reads "For every {N} models in this unit, one model can take one of
-//     the following:", then a dash list - regardless of how many choices the group has, since the
-//     "for every N models" framing is what makes the scope legible without a separate meta line.
-//   - `unit` (and, by the same reasoning, `model`) scope reads "This unit/Each model in this unit
-//     can take one of the following:" + a dash list when there is more than one choice, or the
-//     single choice folded directly into one sentence ("This unit can take {choice}.") when there
-//     is exactly one - a one-item dash list under an introductory sentence said nothing the
-//     sentence itself didn't already say.
-//
-// The old `<p class="option-group__scope">Applies to: Per unit</p>` meta line is gone: the new
-// sentence already states the scope in words, so a second, parallel statement of the same fact
-// would be exactly the redundancy this rework exists to remove.
-//
-// This component still renders nothing for a datasheet with no option groups (FR-009's flat-table
-// fallback is the unit page's decision, not this component's).
+// This component still renders nothing for a datasheet with no option groups and no item
+// constraints (FR-009's flat-table fallback is still the unit page's decision, keyed on
+// `optionGroups.length === 0`, which is unaffected by this rewrite).
 import strings from '../chrome-strings.json';
-import WargearChoiceLine from './WargearChoiceLine.astro';
-import { optionChoicesByGroup } from '../data/bundle.ts';
-import type { DatasheetOptionGroup } from '../data/bundle.ts';
+import LoadoutLines from './LoadoutLines.astro';
+import { assembleOptionsInput } from '../data/assemble-loadout.ts';
+import { renderOptionsBlock } from '../data/loadout-render.ts';
 
 interface Props {
-  groups: readonly DatasheetOptionGroup[];
+  datasheetId: string;
 }
 
-const { groups } = Astro.props;
+const { datasheetId } = Astro.props;
 
-/** The introductory sentence's fixed prefix for a group with more than one choice. */
-function multipleChoicePrefix(scope: DatasheetOptionGroup['scope']): string {
-  if (scope === 'model') return strings.prose.modelMultiplePrefix;
-  return strings.prose.unitMultiplePrefix;
-}
-
-/** The lead-in words before a lone choice folded into one sentence ("{prefix} {choice}."). */
-function singleChoicePrefix(scope: DatasheetOptionGroup['scope']): string {
-  if (scope === 'model') return strings.prose.modelSinglePrefix;
-  return strings.prose.unitSinglePrefix;
-}
+const options = renderOptionsBlock(assembleOptionsInput(datasheetId));
 ---
 
 {
-  groups.length > 0 && (
+  options.lines.length > 0 && (
     <section class="wargear-section" data-wargear-options>
       <h2>{strings.headings.wargearOptions}</h2>
-      {
-        groups.map((group) => {
-          const choices = optionChoicesByGroup.get(group.id) ?? [];
-          // `per_n_models` always takes the dash-list shape, regardless of choice count - the
-          // "for every N models" framing is the whole point of that sentence.
-          const isSingleChoiceSentence = group.scope !== 'per_n_models' && choices.length === 1;
-
-          return (
-            <div class="option-group" data-option-group={group.id} data-option-group-scope={group.scope}>
-              {isSingleChoiceSentence ? (
-                <p class="option-group__sentence">
-                  {singleChoicePrefix(group.scope)} <WargearChoiceLine choice={choices[0]} />{strings.prose.sentenceEnd}
-                </p>
-              ) : (
-                <>
-                  <p class="option-group__sentence">
-                    {group.scope === 'per_n_models' ? (
-                      <>
-                        {strings.prose.perNModelsPrefix}
-                        <span class="mono" data-option-scope-n={group.scopeN}>
-                          {group.scopeN}
-                        </span>
-                        {strings.prose.perNModelsSuffix}
-                      </>
-                    ) : (
-                      multipleChoicePrefix(group.scope)
-                    )}
-                  </p>
-                  <ul class="wargear-choice-list">
-                    {choices.map((choice) => (
-                      <li>
-                        <WargearChoiceLine choice={choice} />
-                      </li>
-                    ))}
-                  </ul>
-                </>
-              )}
-            </div>
-          );
-        })
-      }
+      <LoadoutLines lines={options.lines} dataAttr="wargear-line" />
     </section>
   )
 }

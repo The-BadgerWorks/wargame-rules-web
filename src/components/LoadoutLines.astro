@@ -1,0 +1,62 @@
+---
+// AI-Assisted: Claude Code (model: Claude Sonnet 5) - The one shared segments-to-DOM mapping for
+// rendering-contract.md v1.0.0 output (loadout-rendering-conformance branch), used by both
+// UnitComposition.astro (the composition block) and WargearOptions.astro (the options block).
+//
+// A `BlockResult.lines` (src/data/loadout-render.ts) is `Segment[][]`: one array per rendered line,
+// each entry either a literal template fragment or a bundle-value "slot". This component renders
+// one `<li>` per line and, within it, wraps each `kind: 'slot'` segment in its own `<span>` (styled
+// like every other bundle value on this site) while a `kind: 'literal'` segment renders as bare
+// text. Nothing here re-derives text: every character shown is exactly `segment.text`, so the
+// canonical string's content survives into the DOM unchanged (contract §7's duality - what a reader
+// sees is the same string the conformance test checks byte-for-byte).
+//
+// Leaf indentation (rendering-contract.md §6's 2-space-per-depth-level nesting) arrives as a
+// literal segment of bare spaces at the front of a line. HTML collapses runs of whitespace by
+// default, so `.loadout-line` sets `white-space: pre-wrap` to keep it visible; nothing else on the
+// page needs that rule; it is scoped to this component only.
+import type { Segment } from '../data/loadout-render.ts';
+
+interface Props {
+  lines: readonly Segment[][];
+  /**
+   * The `data-*` attribute name each `<li>` carries its own line index under, e.g. "composition-
+   * line" or "wargear-line". Two blocks on the same page both start their own indices at 0, so a
+   * shared attribute name would let the second block's rows silently overwrite the first's in the
+   * `rows()` test helper (it keys by attribute value alone) - a distinct name per call site keeps
+   * them addressable independently. Defaults to "loadout-line" for a lone block on a page.
+   */
+  dataAttr?: string;
+}
+
+const { lines, dataAttr = 'loadout-line' } = Astro.props;
+---
+
+<ul class="loadout-lines">
+  {
+    lines.map((line, index) => (
+      <li class="loadout-line" {...{ [`data-${dataAttr}`]: index }}>
+        {line.map((segment) =>
+          segment.kind === 'slot' ? (
+            <span class="mono" data-slot={segment.slot}>
+              {segment.text}
+            </span>
+          ) : (
+            segment.text
+          ),
+        )}
+      </li>
+    ))
+  }
+</ul>
+
+<style>
+  .loadout-lines {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .loadout-line {
+    white-space: pre-wrap;
+  }
+</style>

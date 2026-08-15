@@ -1,0 +1,592 @@
+{
+  "_comment": "AI-Assisted: Claude Code (model: claude-opus-5) - Seed conformance corpus for rendering-contract.md v1.0.0. AI-Assisted: Claude Code (model: claude-sonnet-5) - Extended to full §8.1 minimum coverage (007 task T047): C-004 and O-010..O-015 close the gaps the coverage audit found (RND-COMP-NO-NAME, RND-EQP-UNKNOWN-SCOPE, S.namedEach, S.named, RND-OPT-UNKNOWN-SCOPE, RND-OPT-NO-CHOICES, standalone O.choice.noChange, RND-CST-UNKNOWN-TYPE, the depth-2 nesting cap, RND-OPT-GROUP-CYCLE). Every name, count, and identifier is INVENTED. No captured source page, no real datasheet, and no publisher text appears here or in expected.json.",
+  "contractVersion": "1.0.0",
+  "cases": [
+    {
+      "id": "C-001-composition-fixed-and-range",
+      "block": "composition",
+      "covers": ["C.line.fixed", "C.line.range", "E.group.unit", "E.item.counted", "E.item.plain"],
+      "input": {
+        "composition": [
+          { "line": 1, "modelName": "Warden Prime", "minCount": 1, "maxCount": 1 },
+          { "line": 2, "modelName": "Wardens", "minCount": 4, "maxCount": 9 }
+        ],
+        "equipmentGroups": [
+          {
+            "id": "eq-fixture-a-1",
+            "line": 1,
+            "appliesTo": "unit",
+            "items": [
+              { "itemIndex": 1, "itemName": "glimmer carbine" },
+              { "itemIndex": 2, "itemName": "hookblade", "count": 2 }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "C-002-composition-model-group-equipment",
+      "block": "composition",
+      "covers": ["E.group.modelGroup", "ordering by line"],
+      "input": {
+        "composition": [
+          { "line": 1, "modelName": "Warden Prime", "minCount": 1, "maxCount": 1 },
+          { "line": 2, "modelName": "Wardens", "minCount": 4, "maxCount": 9 }
+        ],
+        "equipmentGroups": [
+          {
+            "id": "eq-fixture-b-2",
+            "line": 2,
+            "appliesTo": "model_group",
+            "modelName": "Wardens",
+            "items": [{ "itemIndex": 1, "itemName": "glimmer carbine" }]
+          },
+          {
+            "id": "eq-fixture-b-1",
+            "line": 1,
+            "appliesTo": "model_group",
+            "modelName": "Warden Prime",
+            "items": [
+              { "itemIndex": 1, "itemName": "prime baton" },
+              { "itemIndex": 2, "itemName": "signal lantern" }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "C-003-omission-does-not-cascade",
+      "block": "composition",
+      "covers": ["RND-COMP-BAD-RANGE", "RND-EQP-NO-SUBJECT", "RND-EQP-NO-ITEMS"],
+      "input": {
+        "composition": [
+          { "line": 1, "modelName": "Warden Prime", "minCount": 3, "maxCount": 1 },
+          { "line": 2, "modelName": "Wardens", "minCount": 4, "maxCount": 9 }
+        ],
+        "equipmentGroups": [
+          {
+            "id": "eq-fixture-c-1",
+            "line": 1,
+            "appliesTo": "model_group",
+            "items": [{ "itemIndex": 1, "itemName": "prime baton" }]
+          },
+          { "id": "eq-fixture-c-2", "line": 2, "appliesTo": "unit", "items": [] },
+          {
+            "id": "eq-fixture-c-3",
+            "line": 3,
+            "appliesTo": "unit",
+            "items": [{ "itemIndex": 1, "itemName": "glimmer carbine" }]
+          }
+        ]
+      }
+    },
+    {
+      "id": "O-001-single-replace-whole-unit",
+      "block": "options",
+      "covers": ["S.unit", "O.choice.replace", "O.group.single"],
+      "input": {
+        "optionGroups": [
+          {
+            "id": "og-fixture-d-1",
+            "line": 1,
+            "scope": "unit",
+            "choices": [
+              {
+                "id": "oc-fixture-d-1-1",
+                "name": "lantern pike",
+                "items": [
+                  { "role": "replaced", "itemIndex": 1, "itemName": "hookblade" },
+                  { "role": "granted", "itemIndex": 1, "itemName": "lantern pike" }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "O-002-legacy-and-bundle-render-alike",
+      "block": "options",
+      "covers": ["FR-015: no seam between extraction generations"],
+      "input": {
+        "optionGroups": [
+          {
+            "id": "og-fixture-e-1",
+            "line": 1,
+            "scope": "unit",
+            "choices": [
+              {
+                "id": "oc-fixture-e-1-1",
+                "name": "lantern pike",
+                "items": [
+                  { "role": "replaced", "itemIndex": 1, "itemName": "hookblade" },
+                  { "role": "granted", "itemIndex": 1, "itemName": "lantern pike" }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "og-fixture-e-2",
+            "line": 2,
+            "scope": "unit",
+            "choices": [
+              {
+                "id": "oc-fixture-e-2-1",
+                "name": "lantern pike and 2 shard flasks",
+                "items": [
+                  { "role": "replaced", "itemIndex": 1, "itemName": "hookblade" },
+                  { "role": "replaced", "itemIndex": 2, "itemName": "glimmer carbine" },
+                  { "role": "granted", "itemIndex": 1, "itemName": "lantern pike" },
+                  { "role": "granted", "itemIndex": 2, "itemName": "shard flask", "count": 2 }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "O-003-scoped-stem-up-to",
+      "block": "options",
+      "covers": ["S.namedUpTo", "eligibility beats scope"],
+      "input": {
+        "optionGroups": [
+          {
+            "id": "og-fixture-f-1",
+            "line": 1,
+            "scope": "unit",
+            "eligibleModelName": "Warden Prime",
+            "eligibleMaxCount": 2,
+            "isPerModel": true,
+            "choices": [
+              {
+                "id": "oc-fixture-f-1-1",
+                "name": "prime baton",
+                "items": [
+                  { "role": "replaced", "itemIndex": 1, "itemName": "hookblade" },
+                  { "role": "granted", "itemIndex": 1, "itemName": "prime baton" }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "O-004-shared-stem-alternatives",
+      "block": "options",
+      "covers": ["O.group.alternatives.replace", "O.alternative.line", "O.alternative.noChange"],
+      "input": {
+        "optionGroups": [
+          {
+            "id": "og-fixture-g-1",
+            "line": 1,
+            "scope": "model",
+            "choices": [
+              {
+                "id": "oc-fixture-g-1-1",
+                "name": "lantern pike",
+                "items": [
+                  { "role": "replaced", "itemIndex": 1, "itemName": "hookblade" },
+                  { "role": "granted", "itemIndex": 1, "itemName": "lantern pike" }
+                ]
+              },
+              {
+                "id": "oc-fixture-g-1-2",
+                "name": "shard flask",
+                "items": [
+                  { "role": "replaced", "itemIndex": 1, "itemName": "hookblade" },
+                  { "role": "granted", "itemIndex": 1, "itemName": "shard flask" }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "O-005-grant-only-up-to-n",
+      "block": "options",
+      "covers": ["O.group.alternatives.upTo", "S.perNModels"],
+      "input": {
+        "optionGroups": [
+          {
+            "id": "og-fixture-h-1",
+            "line": 1,
+            "scope": "per_n_models",
+            "scopeN": 5,
+            "maxChoices": 2,
+            "choices": [
+              {
+                "id": "oc-fixture-h-1-1",
+                "name": "shard flask",
+                "items": [{ "role": "granted", "itemIndex": 1, "itemName": "shard flask" }]
+              },
+              {
+                "id": "oc-fixture-h-1-2",
+                "name": "signal lantern",
+                "items": [{ "role": "granted", "itemIndex": 1, "itemName": "signal lantern" }]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "O-006-differing-replaced-sets-fall-back",
+      "block": "options",
+      "covers": ["selection row 6: each choice renders as its own sentence"],
+      "input": {
+        "optionGroups": [
+          {
+            "id": "og-fixture-i-1",
+            "line": 1,
+            "scope": "unit",
+            "choices": [
+              {
+                "id": "oc-fixture-i-1-1",
+                "name": "lantern pike",
+                "items": [
+                  { "role": "replaced", "itemIndex": 1, "itemName": "hookblade" },
+                  { "role": "granted", "itemIndex": 1, "itemName": "lantern pike" }
+                ]
+              },
+              {
+                "id": "oc-fixture-i-1-2",
+                "name": "shard flask",
+                "items": [
+                  { "role": "replaced", "itemIndex": 1, "itemName": "glimmer carbine" },
+                  { "role": "granted", "itemIndex": 1, "itemName": "shard flask" }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "O-007-unresolved-choice-omitted-sibling-survives",
+      "block": "options",
+      "covers": ["RND-OPT-NO-ITEMS", "RND-OPT-NO-SCOPE-N", "omission does not cascade"],
+      "input": {
+        "optionGroups": [
+          {
+            "id": "og-fixture-j-1",
+            "line": 1,
+            "scope": "unit",
+            "choices": [
+              { "id": "oc-fixture-j-1-1", "name": "unresolved", "items": [] },
+              {
+                "id": "oc-fixture-j-1-2",
+                "name": "shard flask",
+                "items": [{ "role": "granted", "itemIndex": 1, "itemName": "shard flask" }]
+              }
+            ]
+          },
+          { "id": "og-fixture-j-2", "line": 2, "scope": "per_n_models", "choices": [] },
+          {
+            "id": "og-fixture-j-3",
+            "line": 3,
+            "scope": "unit",
+            "choices": [
+              {
+                "id": "oc-fixture-j-3-1",
+                "name": "hookblade",
+                "items": [{ "role": "replaced", "itemIndex": 1, "itemName": "hookblade" }]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "O-008-nested-group-and-no-change",
+      "block": "options",
+      "covers": ["parent_group_id indentation", "O.group.alternatives.grant", "O.alternative.noChange"],
+      "input": {
+        "optionGroups": [
+          {
+            "id": "og-fixture-k-1",
+            "line": 1,
+            "scope": "unit",
+            "choices": [
+              {
+                "id": "oc-fixture-k-1-1",
+                "name": "lantern pike",
+                "items": [
+                  { "role": "replaced", "itemIndex": 1, "itemName": "hookblade" },
+                  { "role": "granted", "itemIndex": 1, "itemName": "lantern pike" }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "og-fixture-k-2",
+            "line": 2,
+            "scope": "unit",
+            "parentGroupId": "og-fixture-k-1",
+            "choices": [
+              {
+                "id": "oc-fixture-k-2-1",
+                "name": "signal lantern",
+                "items": [{ "role": "granted", "itemIndex": 1, "itemName": "signal lantern" }]
+              },
+              { "id": "oc-fixture-k-2-2", "name": "no change", "isNoChange": true, "items": [] }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "O-009-item-constraints",
+      "block": "options",
+      "covers": ["K.notReplaceable", "K.notReplaceableForModel", "K.oneOnly", "constraint ordering"],
+      "input": {
+        "optionGroups": [
+          {
+            "id": "og-fixture-l-1",
+            "line": 1,
+            "scope": "unit",
+            "choices": [
+              {
+                "id": "oc-fixture-l-1-1",
+                "name": "shard flask",
+                "items": [{ "role": "granted", "itemIndex": 1, "itemName": "shard flask" }]
+              }
+            ]
+          }
+        ],
+        "itemConstraints": [
+          { "constraintIndex": 1, "constraintType": "one_per_unit", "itemName": "signal lantern" },
+          {
+            "constraintIndex": 2,
+            "constraintType": "not_replaceable",
+            "itemName": "prime baton",
+            "modelName": "Warden Prime"
+          },
+          { "constraintIndex": 3, "constraintType": "not_replaceable", "itemName": "hookblade" }
+        ]
+      }
+    },
+    {
+      "id": "C-004-no-name-and-unknown-equipment-scope",
+      "block": "composition",
+      "covers": ["RND-COMP-NO-NAME", "RND-EQP-UNKNOWN-SCOPE"],
+      "input": {
+        "composition": [
+          { "line": 1, "modelName": "", "minCount": 1, "maxCount": 1 },
+          { "line": 2, "modelName": "Glimmer Adept", "minCount": 1, "maxCount": 3 }
+        ],
+        "equipmentGroups": [
+          {
+            "id": "eq-fixture-m-1",
+            "line": 1,
+            "appliesTo": "detachment",
+            "items": [{ "itemIndex": 1, "itemName": "glow rod" }]
+          },
+          {
+            "id": "eq-fixture-m-2",
+            "line": 2,
+            "appliesTo": "unit",
+            "items": [{ "itemIndex": 1, "itemName": "hex ward" }]
+          }
+        ]
+      }
+    },
+    {
+      "id": "O-010-named-each-and-named-subjects",
+      "block": "options",
+      "covers": ["S.namedEach", "S.named"],
+      "input": {
+        "optionGroups": [
+          {
+            "id": "og-fixture-n-1",
+            "line": 1,
+            "scope": "unit",
+            "eligibleModelName": "Glimmer Adept",
+            "isPerModel": true,
+            "choices": [
+              {
+                "id": "oc-fixture-n-1-1",
+                "items": [
+                  { "role": "replaced", "itemIndex": 1, "itemName": "glow rod" },
+                  { "role": "granted", "itemIndex": 1, "itemName": "hex ward" }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "og-fixture-n-2",
+            "line": 2,
+            "scope": "unit",
+            "eligibleModelName": "Warden Prime",
+            "choices": [
+              {
+                "id": "oc-fixture-n-2-1",
+                "items": [{ "role": "granted", "itemIndex": 1, "itemName": "signal lantern" }]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "O-011-unknown-scope-omits-whole-group",
+      "block": "options",
+      "covers": ["RND-OPT-UNKNOWN-SCOPE"],
+      "input": {
+        "optionGroups": [
+          {
+            "id": "og-fixture-o-1",
+            "line": 1,
+            "scope": "detachment",
+            "choices": [
+              {
+                "id": "oc-fixture-o-1-1",
+                "items": [{ "role": "granted", "itemIndex": 1, "itemName": "glow rod" }]
+              }
+            ]
+          },
+          {
+            "id": "og-fixture-o-2",
+            "line": 2,
+            "scope": "unit",
+            "choices": [
+              {
+                "id": "oc-fixture-o-2-1",
+                "items": [{ "role": "granted", "itemIndex": 1, "itemName": "hex ward" }]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "O-012-no-choices-omits-whole-group",
+      "block": "options",
+      "covers": ["RND-OPT-NO-CHOICES"],
+      "input": {
+        "optionGroups": [
+          { "id": "og-fixture-p-1", "line": 1, "scope": "unit", "choices": [] },
+          {
+            "id": "og-fixture-p-2",
+            "line": 2,
+            "scope": "unit",
+            "choices": [
+              {
+                "id": "oc-fixture-p-2-1",
+                "items": [{ "role": "granted", "itemIndex": 1, "itemName": "glow rod" }]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "O-013-standalone-no-change-and-unknown-constraint-type",
+      "block": "options",
+      "covers": ["O.choice.noChange", "RND-CST-UNKNOWN-TYPE"],
+      "input": {
+        "optionGroups": [
+          {
+            "id": "og-fixture-q-1",
+            "line": 1,
+            "scope": "unit",
+            "choices": [{ "id": "oc-fixture-q-1-1", "isNoChange": true, "items": [] }]
+          }
+        ],
+        "itemConstraints": [
+          { "constraintIndex": 1, "constraintType": "weight_limited", "itemName": "glow rod" }
+        ]
+      }
+    },
+    {
+      "id": "O-014-nested-group-depth-cap",
+      "block": "options",
+      "covers": ["nested-group depth cap at 2"],
+      "input": {
+        "optionGroups": [
+          {
+            "id": "og-fixture-r-1",
+            "line": 1,
+            "scope": "unit",
+            "choices": [
+              {
+                "id": "oc-fixture-r-1-1",
+                "items": [{ "role": "granted", "itemIndex": 1, "itemName": "glow rod" }]
+              }
+            ]
+          },
+          {
+            "id": "og-fixture-r-2",
+            "line": 2,
+            "scope": "unit",
+            "parentGroupId": "og-fixture-r-1",
+            "choices": [
+              {
+                "id": "oc-fixture-r-2-1",
+                "items": [{ "role": "granted", "itemIndex": 1, "itemName": "hex ward" }]
+              }
+            ]
+          },
+          {
+            "id": "og-fixture-r-3",
+            "line": 3,
+            "scope": "unit",
+            "parentGroupId": "og-fixture-r-2",
+            "choices": [
+              {
+                "id": "oc-fixture-r-3-1",
+                "items": [{ "role": "granted", "itemIndex": 1, "itemName": "signal lantern" }]
+              }
+            ]
+          },
+          {
+            "id": "og-fixture-r-4",
+            "line": 4,
+            "scope": "unit",
+            "parentGroupId": "og-fixture-r-3",
+            "choices": [
+              {
+                "id": "oc-fixture-r-4-1",
+                "items": [{ "role": "granted", "itemIndex": 1, "itemName": "prime baton" }]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "O-015-parent-cycle-omits-the-group",
+      "block": "options",
+      "covers": ["RND-OPT-GROUP-CYCLE"],
+      "input": {
+        "optionGroups": [
+          {
+            "id": "og-fixture-s-1",
+            "line": 1,
+            "scope": "unit",
+            "parentGroupId": "og-fixture-s-1",
+            "choices": [
+              {
+                "id": "oc-fixture-s-1-1",
+                "items": [{ "role": "granted", "itemIndex": 1, "itemName": "glow rod" }]
+              }
+            ]
+          },
+          {
+            "id": "og-fixture-s-2",
+            "line": 2,
+            "scope": "unit",
+            "choices": [
+              {
+                "id": "oc-fixture-s-2-1",
+                "items": [{ "role": "granted", "itemIndex": 1, "itemName": "signal lantern" }]
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

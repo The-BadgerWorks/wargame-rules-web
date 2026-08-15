@@ -32,6 +32,13 @@
 // whichever wargear presentation rendered (the merged sentence display or the flat fallback),
 // since 'partial' can describe either case - the parser may have extracted some groups and missed
 // others, or missed all of them and left only cost-bearing options behind.
+//
+// AI-Assisted note (model: Claude Sonnet 5, loadout-rendering-conformance branch): UnitComposition
+// and WargearOptions now take `datasheetId` directly instead of pre-fetched rows - each assembles
+// its own rendering-contract.md input (composition + equipment groups; option groups + item
+// constraints) via src/data/assemble-loadout.ts. `optionGroups` is still read here because the
+// flat-table fallback decision (`showWargearFallback`) is unchanged and is this page's call, not
+// WargearOptions's.
 import BaseLayout from '../../../../layouts/BaseLayout.astro';
 import AbilityList from '../../../../components/AbilityList.astro';
 import CostTable from '../../../../components/CostTable.astro';
@@ -44,7 +51,6 @@ import WeaponTable from '../../../../components/WeaponTable.astro';
 import strings from '../../../../chrome-strings.json';
 import {
   abilitiesByDatasheet,
-  compositionsByDatasheet,
   costTiersByDatasheet,
   costsByDatasheet,
   datasheets,
@@ -96,7 +102,8 @@ const rangedWeapons = weapons.filter((weapon) => !weapon.isMelee);
 const meleeWeapons = weapons.filter((weapon) => weapon.isMelee);
 const abilities = abilitiesByDatasheet.get(datasheet.id) ?? [];
 const keywords = keywordsByDatasheet.get(datasheet.id) ?? [];
-const composition = compositionsByDatasheet.get(datasheet.id) ?? [];
+// Read only to decide the flat-table fallback (FR-009's `showWargearFallback`) - WargearOptions
+// now assembles its own rendering-contract.md input from `datasheetId` directly.
 const optionGroups = optionGroupsByDatasheet.get(datasheet.id) ?? [];
 
 // The led units are listed by name and link only. They deliberately carry no FlagBadges: the badges
@@ -156,7 +163,7 @@ const led = (leaderPairsByLeader.get(datasheet.id) ?? [])
   }
 
   <UnitComposition
-    composition={composition}
+    datasheetId={datasheet.id}
     costs={costsByDatasheet.get(datasheet.id) ?? []}
     tiers={costTiersByDatasheet.get(datasheet.id) ?? []}
   />
@@ -183,7 +190,7 @@ const led = (leaderPairsByLeader.get(datasheet.id) ?? [])
     wargearOptions={wargearOptionsByDatasheet.get(datasheet.id) ?? []}
     showWargearFallback={optionGroups.length === 0}
   />
-  <WargearOptions groups={optionGroups} />
+  <WargearOptions datasheetId={datasheet.id} />
   {
     datasheet.wargearOptionState === 'partial' && (
       <p class="wargear-partial-note" data-wargear-partial-note>
