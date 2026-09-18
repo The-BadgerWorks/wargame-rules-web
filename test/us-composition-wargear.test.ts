@@ -84,9 +84,14 @@ describe('Unit composition lines, per rendering-contract.md §3.2/§4.1 (FR-004,
     const html = await enrichedPage(BRAMBLE_WARDEN);
 
     const sizeRows = rows(html, 'cost');
+    // copyIndexMin 1 (the common case): the plain label, no qualifier - real bundle tier labels
+    // never say which copy they start from in words, only `copyIndexMin` does (bugfix: an operator
+    // report showed two "5 models" rows with different points and no way to tell them apart, once
+    // this site stopped rendering a separate copy-index column).
     expect(text(sizeRows.get('5-1')!)).toContain('5 models (70 pts)');
-    // The tier's own label already says "third copy onward" - no separate copy-index column.
-    expect(text(sizeRows.get('5-3')!)).toContain('5 models, third copy onward (65 pts)');
+    expect(text(sizeRows.get('5-1')!)).not.toContain('copy');
+    // copyIndexMin > 1: the qualifier is appended by this site, not read from the label.
+    expect(text(sizeRows.get('5-3')!)).toContain('5 models, copy 3 onwards (65 pts)');
     expect(text(sizeRows.get('10-1')!)).toContain('10 models (140 pts)');
   });
 

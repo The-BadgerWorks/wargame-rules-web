@@ -83,7 +83,9 @@
     "rangeSeparator": "-",
     "pointsOpen": "(",
     "pointsSuffix": "pts)",
-    "sentenceEnd": "."
+    "sentenceEnd": ".",
+    "copyOnwardsPre": ", copy ",
+    "copyOnwardsPost": " onwards"
   },
   "loadout": {
     "equipmentUnitPrefix": "Every model is equipped with: ",

@@ -185,14 +185,18 @@ describe('Points (FR-012, FR-014, US2 scenarios 5 and 7)', () => {
     expect(rendered.get('10-1')!).toContain('data-cost-points="140"');
   });
 
-  it('shows an escalating cost for repeated copies as its own row, using the tier label verbatim', async () => {
+  it('shows an escalating cost for repeated copies as its own row, with a copy-index qualifier this site adds itself', async () => {
     const html = await page(BRAMBLE_WARDEN);
 
     expect(attrValues(html, 'cost')).toContain('5-3');
     const escalating = rows(html, 'cost').get('5-3')!;
     expect(escalating).toContain('data-cost-points="65"');
-    // The tier's own label already says which copy it starts from - no separate column for it.
-    expect(text(escalating)).toContain('5 models, third copy onward');
+    // Real bundle tier labels are plain ("5 models") regardless of copyIndexMin - only
+    // `copyIndexMin` itself says which copy a row starts from, so this site appends the qualifier
+    // rather than trusting the label to already say it in words (bugfix, loadout-rendering-
+    // conformance branch: an operator report showed two identically-labelled "5 models" rows with
+    // different points and no way to tell them apart).
+    expect(text(escalating)).toContain('5 models, copy 3 onwards');
   });
 
   it('visibly marks an unverified cost row rather than presenting it as a verified one', async () => {
