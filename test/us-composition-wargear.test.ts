@@ -188,7 +188,7 @@ describe('Item constraints, per rendering-contract.md §3.5/§4.6 (spec 007)', (
 
   it('reads "Only one model in this unit can be equipped with {item}." for a one_per_unit constraint', async () => {
     const html = await enrichedPage(BRAMBLE_WARDEN);
-    expect(content(html)).toContain('Only one model in this unit can be equipped with Bramble Standard.');
+    expect(content(html)).toContain('Only one model in this unit can be equipped with Hover Limpet.');
   });
 });
 

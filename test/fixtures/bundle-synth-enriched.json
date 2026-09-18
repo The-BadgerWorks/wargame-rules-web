@@ -760,7 +760,7 @@
     {
       "id": "oc-bramble-warden-1-2",
       "groupId": "og-bramble-warden-1",
-      "name": "Bramble Standard",
+      "name": "Hover Limpet",
       "count": 1,
       "isDefault": false,
       "isNoChange": false
@@ -857,7 +857,7 @@
       "datasheetId": "ds-bramble-warden",
       "constraintIndex": 2,
       "constraintType": "one_per_unit",
-      "itemName": "Bramble Standard"
+      "itemName": "Hover Limpet"
     }
   ],
   "factionRules": [
