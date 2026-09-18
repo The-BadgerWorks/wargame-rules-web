@@ -37,6 +37,7 @@ export interface LoadoutItem {
   itemName: string;
   count?: number;
   weaponLine?: number;
+  wargearAbilityId?: string;
 }
 
 export interface LoadoutEquipmentGroup {
@@ -96,6 +97,7 @@ export interface Segment {
   text: string;
   slot?: string;
   ref?: string | number;
+  wargearAbilityId?: string;
 }
 
 export interface BlockResult {
@@ -124,16 +126,23 @@ function lit(text: string): Segment {
   return { kind: 'literal', text };
 }
 
-function slotSeg(name: string, text: string, ref?: string | number): Segment {
-  return ref === undefined ? { kind: 'slot', text, slot: name } : { kind: 'slot', text, slot: name, ref };
+function slotSeg(name: string, text: string, ref?: string | number, wargearAbilityId?: string): Segment {
+  const base: Segment = ref === undefined ? { kind: 'slot', text, slot: name } : { kind: 'slot', text, slot: name, ref };
+  return wargearAbilityId === undefined ? base : { ...base, wargearAbilityId };
 }
 
-/** E.item.counted / E.item.plain (§3.3), reused by §4.5 for a choice's items. */
+/** E.item.counted / E.item.plain (§3.3), reused by §4.5 for a choice's items. The wargear ability
+ *  id, when present, rides the itemName slot only - never the count slot (contract has no
+ *  provision for it, this is site-local metadata for a later disclosure UI). */
 function renderItem(item: LoadoutItem): Segment[] {
   if (item.count !== undefined) {
-    return [slotSeg('count', String(item.count)), lit(' '), slotSeg('itemName', item.itemName, item.weaponLine)];
+    return [
+      slotSeg('count', String(item.count)),
+      lit(' '),
+      slotSeg('itemName', item.itemName, item.weaponLine, item.wargearAbilityId),
+    ];
   }
-  return [slotSeg('itemName', item.itemName, item.weaponLine)];
+  return [slotSeg('itemName', item.itemName, item.weaponLine, item.wargearAbilityId)];
 }
 
 /** L.join (§3.6): items joined by "; ", never a conjunction. */
