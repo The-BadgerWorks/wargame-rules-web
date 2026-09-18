@@ -336,6 +336,7 @@ export interface DatasheetOptionChoiceItem {
   itemName: string;
   count?: number;
   weaponLine?: number;
+  wargearAbilityId?: string;
 }
 
 /** One default-equipment sentence and who it applies to (loadout-schema-delta.md §2.2). */
@@ -356,6 +357,16 @@ export interface DatasheetEquipmentItem {
   itemName: string;
   count?: number;
   weaponLine?: number;
+  wargearAbilityId?: string;
+}
+
+/** A curated wargear ability, exact-name-linked from an equipment/option-choice item
+ *  (reference-db-schema.md v1.7.0, 010 R13: wargear_ability, wargear_ability_id, ability_class). */
+export interface WargearAbility {
+  id: string;
+  factionId: string;
+  name: string;
+  summary: string;
 }
 
 /** A restriction the datacard states against a named item (display-fidelity-schema-delta.md §2.1). */
@@ -416,6 +427,8 @@ export interface Bundle {
   datasheetEquipmentGroups?: DatasheetEquipmentGroup[];
   datasheetEquipmentItems?: DatasheetEquipmentItem[];
   datasheetItemConstraints?: DatasheetItemConstraint[];
+  // 010 R13: curated wargear abilities, exact-name linked from an equipment/option-choice item.
+  wargearAbilities?: WargearAbility[];
 }
 
 /** What every page's banner reads, and what dist/build-info.json records. */
@@ -764,6 +777,12 @@ export const itemConstraintsByDatasheet: ReadonlyMap<string, readonly DatasheetI
     [...(parsed.datasheetItemConstraints ?? [])].sort((a, b) => a.constraintIndex - b.constraintIndex),
     (c) => c.datasheetId,
   );
+
+// 010 R13: curated wargear abilities, indexed by id so an item's wargearAbilityId can look one up.
+export const wargearAbilitiesById: ReadonlyMap<string, WargearAbility> = indexBy(
+  parsed.wargearAbilities ?? [],
+  (w) => w.id,
+);
 
 // ---------------------------------------------------------------------------
 // Routing. Slugs are derived and asserted here, once, so a charset violation or a collision fails

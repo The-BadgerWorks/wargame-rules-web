@@ -10,8 +10,8 @@
       "schemaContractVersion": 1,
       "restrictionVocabularyVersion": 1,
       "fileUrl": "bundle-synth-enriched.json",
-      "sizeBytes": 26555,
-      "sha256": "11772193eab6cceea5b7210e8395b052bc62d0bab82eb888442ed4d43a5673a0",
+      "sizeBytes": 27151,
+      "sha256": "818a0a01683579a70873062c387901872d752829143e49f92b64a299975ca1ac",
       "withdrawn": false,
       "withdrawnReason": null
     }

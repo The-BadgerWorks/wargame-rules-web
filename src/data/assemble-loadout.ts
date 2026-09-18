@@ -47,6 +47,7 @@ export function assembleCompositionInput(datasheetId: string): LoadoutInput {
         itemName: item.itemName,
         count: item.count,
         weaponLine: item.weaponLine,
+        wargearAbilityId: item.wargearAbilityId,
       })),
     }),
   );
@@ -77,6 +78,7 @@ export function assembleOptionsInput(datasheetId: string): LoadoutInput {
           itemName: item.itemName,
           count: item.count,
           weaponLine: item.weaponLine,
+          wargearAbilityId: item.wargearAbilityId,
         })),
       }),
     ),

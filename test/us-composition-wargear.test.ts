@@ -148,8 +148,15 @@ describe('Wargear options, per rendering-contract.md §3.4/§4.3/§4.4/§4.5 (FR
     expect(wargearText).toContain(
       'One model in this unit for every 5 models it contains can have Sap Carbine replaced with Thornlance.',
     );
+    // The linked item's <details> disclosure carries its wargear-ability summary as a sibling of
+    // <summary> (LoadoutLines.astro, wargear-abilities web feature Task 2), and native <details>
+    // hides that sibling only visually when closed - the raw HTML (and this helper's text()) still
+    // contains it inline. This is the one pinned string this rename touches beyond the name itself
+    // (kickoff's named exception): the item that already carried the "Bramble Standard"/now
+    // "Hover Limpet" name is the one Task 2 chose to link, so its sentence now reads on through the
+    // disclosure's own summary text rather than stopping at the item name.
     expect(wargearText).toContain(
-      'One model in this unit for every 5 models it contains can be equipped with Bramble Standard.',
+      "One model in this unit for every 5 models it contains can be equipped with Hover Limpet Placeholder: the bearer's unit ignores one placeholder modifier..",
     );
     expect(wargearText).toContain(
       'One model in this unit for every 5 models it contains can be left unchanged.',
@@ -181,7 +188,7 @@ describe('Item constraints, per rendering-contract.md §3.5/§4.6 (spec 007)', (
 
   it('reads "Only one model in this unit can be equipped with {item}." for a one_per_unit constraint', async () => {
     const html = await enrichedPage(BRAMBLE_WARDEN);
-    expect(content(html)).toContain('Only one model in this unit can be equipped with Bramble Standard.');
+    expect(content(html)).toContain('Only one model in this unit can be equipped with Hover Limpet.');
   });
 });
 

@@ -760,7 +760,7 @@
     {
       "id": "oc-bramble-warden-1-2",
       "groupId": "og-bramble-warden-1",
-      "name": "Bramble Standard",
+      "name": "Hover Limpet",
       "count": 1,
       "isDefault": false,
       "isNoChange": false
@@ -806,11 +806,18 @@
       "line": 1,
       "appliesTo": "model_group",
       "modelName": "Swiftwing Scout"
-    }
+    },
+    { "id": "eg-bramble-warden-1", "datasheetId": "ds-bramble-warden", "line": 1, "appliesTo": "unit" }
   ],
   "datasheetEquipmentItems": [
     { "groupId": "eg-choir-echo-1", "itemIndex": 0, "itemName": "Echo Blade", "weaponLine": 1 },
-    { "groupId": "eg-swiftwing-scout-1", "itemIndex": 0, "itemName": "Swift Javelin", "weaponLine": 1 }
+    { "groupId": "eg-swiftwing-scout-1", "itemIndex": 0, "itemName": "Swift Javelin", "weaponLine": 1 },
+    {
+      "groupId": "eg-bramble-warden-1",
+      "itemIndex": 0,
+      "itemName": "Hover Limpet",
+      "wargearAbilityId": "wga-verdant-concord-hover-limpet"
+    }
   ],
   "datasheetOptionChoiceItems": [
     {
@@ -827,7 +834,13 @@
       "itemName": "Thornlance",
       "weaponLine": 2
     },
-    { "choiceId": "oc-bramble-warden-1-2", "role": "granted", "itemIndex": 0, "itemName": "Bramble Standard" },
+    {
+      "choiceId": "oc-bramble-warden-1-2",
+      "role": "granted",
+      "itemIndex": 0,
+      "itemName": "Hover Limpet",
+      "wargearAbilityId": "wga-verdant-concord-hover-limpet"
+    },
     { "choiceId": "oc-lattice-drone-1-1", "role": "granted", "itemIndex": 0, "itemName": "Pulse Array" },
     { "choiceId": "oc-lattice-drone-1-2", "role": "granted", "itemIndex": 0, "itemName": "Heavy Beamer" },
     { "choiceId": "oc-lattice-drone-2-1", "role": "granted", "itemIndex": 0, "itemName": "Ident Beacon" }
@@ -844,7 +857,7 @@
       "datasheetId": "ds-bramble-warden",
       "constraintIndex": 2,
       "constraintType": "one_per_unit",
-      "itemName": "Bramble Standard"
+      "itemName": "Hover Limpet"
     }
   ],
   "factionRules": [
@@ -906,5 +919,13 @@
   "datasheetLeaderPairs": [
     { "leaderDatasheetId": "ds-thicket-matriarch", "bodyguardDatasheetId": "ds-bramble-warden" }
   ],
-  "datasheetDetachmentEligibility": []
+  "datasheetDetachmentEligibility": [],
+  "wargearAbilities": [
+    {
+      "id": "wga-verdant-concord-hover-limpet",
+      "factionId": "f-verdant-concord",
+      "name": "Hover Limpet",
+      "summary": "Placeholder: the bearer's unit ignores one placeholder modifier."
+    }
+  ]
 }
