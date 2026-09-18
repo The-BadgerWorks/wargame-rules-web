@@ -9,6 +9,10 @@
  * wargear-choice prose rules below, and added .keyword-float-tip (cursor-hover-keyword-tooltip
  * branch, not separately noted at the time) for the keyword glossary's cursor-anchored preview.
  *
+ * AI-Assisted note (model: Claude Sonnet 5, wargear-abilities web feature Task 2): added the
+ * .wargear-ability rules for LoadoutLines.astro's new disclosure, which shares .keyword-float-tip
+ * above via FloatTip.astro rather than defining its own hover-preview styling.
+ *
  * No CSS framework and no build step beyond Astro's own: this is a reference site whose per-page
  * payload is HTML plus this one file plus one small filter script. It uses system fonts so nothing
  * is fetched from a third party, and it carries no decorative imagery of any kind - FR-024 forbids
@@ -590,4 +594,28 @@ code,
   font-size: 0.8125rem;
   line-height: 1.4;
   pointer-events: none;
+}
+
+/* --------------------------------------------------------------------------
+ * Wargear-ability disclosure beside a linked item name (wargear-abilities web
+ * feature, Task 2). Same native <details>/<summary> pattern as the keyword
+ * glossary above, sharing its FloatTip.astro hover script - but this one sits
+ * INLINE inside a LoadoutLines sentence rather than as its own list item, so
+ * it needs `display: inline` where the glossary's <details> did not. No new
+ * colours: `.wargear-ability__summary` gets the same plain-margin treatment
+ * `.keyword-glossary__summary`/`.ability__summary` already rely on (inherited
+ * body text, no rule of its own beyond spacing).
+ * -------------------------------------------------------------------------- */
+
+.wargear-ability {
+  display: inline;
+}
+
+.wargear-ability > summary {
+  display: inline;
+  cursor: pointer;
+}
+
+.wargear-ability__summary {
+  margin: 0.15rem 0 0;
 }

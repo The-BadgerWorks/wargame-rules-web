@@ -15,7 +15,16 @@
 // literal segment of bare spaces at the front of a line. HTML collapses runs of whitespace by
 // default, so `.loadout-line` sets `white-space: pre-wrap` to keep it visible; nothing else on the
 // page needs that rule; it is scoped to this component only.
+//
+// AI-Assisted note (model: Claude Sonnet 5, wargear-abilities web feature Task 2): a slot segment
+// may additionally carry `wargearAbilityId` (Task 1) on its `itemName` slot only. When that id
+// resolves in `wargearAbilitiesById`, the item name renders inside a native <details>/<summary>
+// disclosure - the same pattern KeywordTag.astro already uses for the keyword glossary, sharing
+// its FloatTip.astro hover script - instead of the bare slot <span>. Every other segment (and any
+// segment whose id does not resolve) renders exactly as before.
 import type { Segment } from '../data/loadout-render.ts';
+import { wargearAbilitiesById } from '../data/bundle.ts';
+import FloatTip from './FloatTip.astro';
 
 interface Props {
   lines: readonly Segment[][];
@@ -36,19 +45,38 @@ const { lines, dataAttr = 'loadout-line' } = Astro.props;
   {
     lines.map((line, index) => (
       <li class="loadout-line" {...{ [`data-${dataAttr}`]: index }}>
-        {line.map((segment) =>
-          segment.kind === 'slot' ? (
-            <span class="mono" data-slot={segment.slot}>
-              {segment.text}
-            </span>
-          ) : (
-            segment.text
-          ),
-        )}
+        {line.map((segment) => {
+          if (segment.kind !== 'slot') return segment.text;
+
+          const entry = segment.wargearAbilityId
+            ? wargearAbilitiesById.get(segment.wargearAbilityId)
+            : undefined;
+
+          if (!entry) {
+            return (
+              <span class="mono" data-slot={segment.slot}>
+                {segment.text}
+              </span>
+            );
+          }
+
+          return (
+            <details class="wargear-ability" data-wargear-ability={entry.id} data-float-tip>
+              <summary>
+                <span class="mono" data-slot={segment.slot}>
+                  {segment.text}
+                </span>
+              </summary>
+              <p class="wargear-ability__summary float-tip__summary">{entry.summary}</p>
+            </details>
+          );
+        })}
       </li>
     ))
   }
 </ul>
+
+<FloatTip />
 
 <style>
   .loadout-lines {

@@ -1,0 +1,108 @@
+---
+// AI-Assisted: Claude Code (model: Claude Sonnet 5) - The shared cursor-anchored floating preview
+// script (wargear-abilities web feature, Task 2). Moved out of KeywordTag.astro so both the
+// keyword glossary's <details> and the new wargear-ability disclosure (LoadoutLines.astro) mount
+// the identical enhancement instead of each carrying their own copy. This is a MOVE, not a
+// rewrite: the script below is character-identical to the block that used to sit inline in
+// KeywordTag.astro except for exactly two generalisations - the selector
+// `[data-keyword-glossary]` -> `[data-float-tip]`, and the summary-text lookup
+// `.keyword-glossary__summary` -> `.float-tip__summary` - so the glossary's own regression test
+// (test/us-keyword-glossary.test.ts) still proves this script, unchanged in behaviour, now that it
+// is shared.
+---
+
+<script>
+  // Bundled (not is:inline), matching UnitFilter.astro's convention. Astro includes and runs a
+  // component's script once per page even when the component is used many times, so this runs
+  // once regardless of how many keyword tags the page renders - which is also why the floating
+  // preview element below is created exactly once per page, not once per keyword.
+  //
+  // This is a pure ENHANCEMENT over the native toggle in the markup above: it adds a hover
+  // trigger (FR-010) and Escape-to-close (render-contract.md section 3). Blocking this script
+  // narrows the interaction to click/tap and keyboard - it never removes them, the same fails-open
+  // posture UnitFilter.astro established for its own script (research.md section 2's documented,
+  // accepted no-JS degradation). With no script, no floating element exists at all; the native
+  // <details> is the whole interaction, exactly as it was before this change.
+  //
+  // Hover no longer opens the <details> in place (cursor-hover-keyword-tooltip). Instead it shows
+  // one shared, cursor-anchored preview box, reusing the summary text already sitting in the
+  // details' own <p> - no second copy of the bundle text is introduced anywhere, attribute or
+  // otherwise, so there is nothing here for the content-boundary scan to miss.
+  const tooltips = document.querySelectorAll<HTMLDetailsElement>('[data-float-tip]');
+
+  if (tooltips.length > 0) {
+    // "hover" here means a real pointing device, not a touch tap that a browser simulates into a
+    // mouse-event sequence - touch devices must never see this floating box (design decision).
+    const hoverCapable = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+
+    const tip = document.createElement('div');
+    tip.className = 'keyword-float-tip';
+    // The <details>/<summary> disclosure already exposes this same text to assistive tech when
+    // opened; this floating copy is a purely visual convenience for a pointing-device hover and
+    // must not be exposed a second time.
+    tip.setAttribute('aria-hidden', 'true');
+    tip.hidden = true;
+    document.body.append(tip);
+
+    const CURSOR_OFFSET_PX = 14;
+    const VIEWPORT_MARGIN_PX = 4;
+
+    function positionTip(clientX: number, clientY: number): void {
+      const { width, height } = tip.getBoundingClientRect();
+
+      let left = clientX + CURSOR_OFFSET_PX;
+      let top = clientY + CURSOR_OFFSET_PX;
+
+      // Flip above/left when the default below-right placement would run off the viewport.
+      if (left + width > window.innerWidth - VIEWPORT_MARGIN_PX) {
+        left = clientX - CURSOR_OFFSET_PX - width;
+      }
+      if (top + height > window.innerHeight - VIEWPORT_MARGIN_PX) {
+        top = clientY - CURSOR_OFFSET_PX - height;
+      }
+
+      tip.style.left = `${Math.max(VIEWPORT_MARGIN_PX, left)}px`;
+      tip.style.top = `${Math.max(VIEWPORT_MARGIN_PX, top)}px`;
+    }
+
+    for (const details of tooltips) {
+      const summary = details.querySelector('summary');
+      if (!summary) continue;
+
+      summary.addEventListener('mouseenter', (event) => {
+        // A user who has clicked/tapped this open has pinned the disclosure; showing the floating
+        // copy over it too would put the same text on screen twice (design decision).
+        if (!hoverCapable || details.open) return;
+
+        const summaryText = details.querySelector('.float-tip__summary')?.textContent;
+        if (!summaryText) return;
+
+        tip.textContent = summaryText;
+        tip.hidden = false;
+        positionTip(event.clientX, event.clientY);
+      });
+
+      summary.addEventListener('mousemove', (event) => {
+        if (tip.hidden) return;
+        positionTip(event.clientX, event.clientY);
+      });
+
+      summary.addEventListener('mouseleave', () => {
+        tip.hidden = true;
+      });
+
+      // Covers both directions: opening while still hovered hides the (now redundant) floating
+      // copy immediately, and closing again does not resurrect it uninvited.
+      details.addEventListener('toggle', () => {
+        if (details.open) tip.hidden = true;
+      });
+
+      details.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && details.open) {
+          details.open = false;
+          summary.focus();
+        }
+      });
+    }
+  }
+</script>
